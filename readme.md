@@ -1,21 +1,20 @@
-# Supra
+# Supra <!-- omit in toc -->
 
-- [Supra](#supra)
-  - [About](#about)
-  - [Requirements](#requirements)
-  - [Setup](#setup)
-    - [Supra Markup](#supra-markup)
-      - [Citations](#citations)
-      - [Internal Cross References](#internal-cross-references)
-    - [Supported Source Types & CSL JSON](#supported-source-types--csl-json)
-  - [Usage](#usage)
-    - [Additional Features](#additional-features)
-      - [Small Caps](#small-caps)
-      - [Offsetting](#offsetting)
-      - [User Journal File](#user-journal-file)
-      - [Overwriting the Input File](#overwriting-the-input-file)
-    - [Makefile](#makefile)
-  - [Changelog](#changelog)
+- [About](#about)
+- [Requirements](#requirements)
+- [Setup](#setup)
+  - [Supra Markup](#supra-markup)
+    - [Citations](#citations)
+    - [Internal Cross References](#internal-cross-references)
+  - [Supported Source Types & CSL JSON](#supported-source-types--csl-json)
+- [Usage](#usage)
+  - [Additional Features](#additional-features)
+    - [Small Caps](#small-caps)
+    - [Offsetting](#offsetting)
+    - [User Journal File](#user-journal-file)
+    - [Overwriting the Input File](#overwriting-the-input-file)
+  - [Makefile](#makefile)
+- [Changelog](#changelog)
 
 ## About
 
@@ -23,7 +22,7 @@ Supra is a [Pandoc](https://pandoc.org) preprocessor for writing U.S. legal scho
 Pandoc is great for academic writing.
 But Pandoc doesn't have a way to to deal with unique style of U.S. legal scholarship, which normally contains innumerable footnotes with a plethora of cross references, *i.e.*, *supra* notes.
 
-Supra makes Pandoc more useful for writing U.S. legal scholarship by (1)\ inserting citations for common source types that use cross references, (2)\ adding cross-references for those sources in subsequent footnotes, and (3)\ adding cross-references among footnotes.
+Supra makes Pandoc more useful for writing U.S. legal scholarship by (1) inserting citations for common source types that use cross references, (2) adding cross-references for those sources in subsequent footnotes, and (3) adding cross-references among footnotes.
 More specifically, Supra searches the footnotes in a Pandoc markdown document for certain kinds of sources (see [Supported Source Types](supported-source-types-csl-json) below).
 Using a CSL JSON library, Supra changes the first citation to the standard full citation form.
 It then changes all subsequent citations to the "*supra* note" format with the correct footnote number.
