@@ -42,7 +42,7 @@ Supra looks through Pandoc markdown documents for two things: citations in Pando
 
 #### Citations
 
-Citations must be (1)\ inside inline footnotes and (2)\ in the form of an id that begins with `@` and is surrounded by brackets.
+Citations must be (1) inside inline footnotes and (2) in the form of an id that begins with `@` and is surrounded by brackets.
 Note, a document written with reference footnotes can be converted to inline footnotes using the [`inliner`](https://github.com/ltrgoddard/inliner) python script.
 
 ```Markdown
@@ -135,7 +135,7 @@ supra input.md library.json | pandoc --from=markdown -o output.docx
 ```
 
 An optional third argument is the output file.
-This is expected as argument three, though it can also be set via `-o/` or `--output`.
+This is expected as argument three, though it can also be set via `-o` or `--output`.
 
 ```zsh
 # Three-argument example
