@@ -8,6 +8,7 @@
     - [Internal Cross References](#internal-cross-references)
   - [Supported Source Types & CSL JSON](#supported-source-types--csl-json)
 - [Usage](#usage)
+  - [Basic Usage](#basic-usage)
   - [Additional Features](#additional-features)
     - [Small Caps](#small-caps)
     - [Offsetting](#offsetting)
@@ -23,11 +24,12 @@ Pandoc is great for academic writing.
 But Pandoc doesn't have a way to to deal with the format of U.S. legal scholarship, which normally contains innumerable footnotes with a plethora of cross references, *i.e.*, *supra* notes.
 
 Supra makes Pandoc more useful for writing U.S. legal scholarship by (1) inserting citations for common source types that use cross references, (2) adding cross-references for those sources in subsequent footnotes, and (3) adding cross-references among footnotes.
-More specifically, Supra searches the footnotes in a Pandoc markdown document for certain kinds of sources (see [Supported Source Types](supported-source-types-csl-json) below).
+More specifically, Supra searches the footnotes in a Pandoc markdown document for certain kinds of sources (see [Supported Source Types](#supported-source-types-csl-json) below).
 Using a CSL JSON library, Supra changes the first citation to the standard full citation form.
 It then changes all subsequent citations to the "*supra* note" format with the correct footnote number.
 If multiple citations have the same author, Supra also adds a "hereinafter" to the long cite and a short title to subsequent cites.
 Finally, Supra looks for cross references in and to other footnotes.
+All formatting follows the guidelines of the [Indigo Book](https://law.resource.org/pub/us/code/blue/IndigoBook.html).
 
 ## Requirements
 
@@ -43,6 +45,7 @@ Supra looks through Pandoc markdown documents for two things: citations in Pando
 #### Citations
 
 Citations must be (1) inside inline footnotes and (2) in the form of an id that begins with `@` and is surrounded by brackets.
+The id is from your CSL JSON library.
 Note, a document written with reference footnotes can be converted to inline footnotes using the [`inliner`](https://github.com/ltrgoddard/inliner) python script.
 
 ```Markdown
@@ -79,12 +82,12 @@ An "at" is optional, and Supra will ensure that citation types that require an "
 #### Internal Cross References
 
 Supra can also add cross-reference to other footnotes.
-This requires adding an id to the referred-to footnote, which is a unique string that begins with a `?` and is surrounded by brackets.
+This requires adding an id to the referred-to footnote, which is a unique string that begins with a `?`, is surrounded by brackets, and is the first thing in the footnote.
 The footnote can then be referred to with that id.
 
 Supra will not add *supra*, *infra*, or the word "note" to cross references.
 Supra can't (yet?) tell whether the cross references come before or after the id'd footnote, so it doesn't know whether *supra* or *infra* is appropriate.
-And there are many ways of phrasing internal cross references (*e.g.*, *see* *supra* note 1, *see* *supra*, text accompanying notes 1–2, *see* *infra* notes 1 & 4 and accompanying text).
+And there are many ways of phrasing internal cross references (*e.g.*, *see* *supra* note 1; *see* *supra*, text accompanying notes 1–2; *see* *infra* notes 1 & 4 and accompanying text).
 Supra doesn't know which phrasing you want.
 So you must write the rest of the internal cross-reference yourself.
 
@@ -119,6 +122,8 @@ volume: 10
 There is also limited support for non-consecutively paginated journals, book reviews, student-written material, and treatises that have non-page-number pincites (e.g., §\ 1001).
 
 ## Usage
+
+### Basic Usage
 
 Supra is a command-line program.
 It requires two arguments: the Pandoc-markdown file and the CSL JSON library.
@@ -159,7 +164,7 @@ If using this flag and a [custom reference file](https://pandoc.org/MANUAL.html#
 
 Supra normally assumes that the first footnote in a document is numbered 1, the second 2, etc.
 If you plan to change the numbers for any footnotes—say, to turn the first footnote into a \*—then you need to offset the footnote counter.
-The offset counter is invoked with the `-f/--offset` argument.
+The offset counter is invoked with the `-f` or `--offset` argument.
 To skip some of the first footnotes, follow the argument with a negative number.
 To start at a later number, follow the argument with a positive number.
 
@@ -171,7 +176,7 @@ supra input.md library.json output.md -f -1
 supra input.md library.json output.md -f 99
 ```
 
-I will note, however, that it's often easier to manually insert a \* footnote after the document is output to Word.
+I'll note, however, that it's often easier to manually insert a \* footnote after the document is output to Word.
 
 #### User Journal File
 
@@ -182,10 +187,18 @@ It will also attempt to abbreviate journal names that it does not know, and you 
 You can also supply your own collection of abbreviated journal names.
 The names must be in the form of a user-journal file.
 You can create a blank user-journal file by running `supra blankuj`.
-This will output a file called `blank-user-journals.ron`.
+This will create a file called `blank-user-journals.ron`.
 Open the file in any plain-text editor, and you will find instructions on how to add journals and a placeholder example.
 
 To run Supra with a user-journal file, add the argument `-u` or `--user_journals`, follwed by the file name.
+
+```zsh
+# Create a blank user-journal file
+supra blankuj
+
+# Use a custom user-journal file
+supra input.md library.json output.md -u my-journals.ron
+```
 
 #### Overwriting the Input File
 
@@ -218,7 +231,7 @@ build_tools :=\
     $(supra_lib)
 
 $(docx_file): $(source_file) $(build_tools)
-    supra -s \
+    supra \
     $(source_file) \
     $(supra_lib) |\
     pandoc \
