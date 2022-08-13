@@ -20,7 +20,7 @@
 
 Supra is a [Pandoc](https://pandoc.org) preprocessor for writing U.S. legal scholarship.
 Pandoc is great for academic writing.
-But Pandoc doesn't have a way to to deal with unique style of U.S. legal scholarship, which normally contains innumerable footnotes with a plethora of cross references, *i.e.*, *supra* notes.
+But Pandoc doesn't have a way to to deal with the format of U.S. legal scholarship, which normally contains innumerable footnotes with a plethora of cross references, *i.e.*, *supra* notes.
 
 Supra makes Pandoc more useful for writing U.S. legal scholarship by (1) inserting citations for common source types that use cross references, (2) adding cross-references for those sources in subsequent footnotes, and (3) adding cross-references among footnotes.
 More specifically, Supra searches the footnotes in a Pandoc markdown document for certain kinds of sources (see [Supported Source Types](supported-source-types-csl-json) below).
