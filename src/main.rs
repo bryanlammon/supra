@@ -88,9 +88,7 @@ fn main() {
                 .hidden_long_help(true)
                 .default_value("2"),
         )
-        .subcommand(
-            SubCommand::with_name("blankuj").about("For creating a blank user-journals file"),
-        )
+        .subcommand(SubCommand::with_name("uj").about("For creating a blank user-journals file"))
         .get_matches();
 
     // Setup the terminal logger.
