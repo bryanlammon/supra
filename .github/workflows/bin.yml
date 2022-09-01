@@ -1,0 +1,22 @@
+name: Build & Save Binaries
+
+on:
+  workflow_dispatch:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Linux Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --verbose --release
+    - name: capture build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Artifacts
+        path: bin/
