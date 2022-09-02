@@ -1,4 +1,4 @@
-name: Save Binaries
+name: Save Linux & Windows Binaries
 
 on:
   workflow_dispatch:
@@ -8,54 +8,12 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-#   build:
-#     name: Linux Build
-#     runs-on: ubuntu-latest
-#     steps:
-#     - name: Checkout
-#       uses: actions/checkout@v3
-#     - name: Build
-#       run: cargo build --release
-#     - name: Capture Build Artifact
-#       uses: actions/upload-artifact@v2
-#       with:
-#         name: linux-build
-#         path: target/release/
-
-#   build-win:
-#     name: Windows Build
-#     runs-on: windows-latest
-    
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v3
-#       - name: Build
-#         run: cargo build --release
-#       - name: Capture Build Artifact
-#         uses: actions/upload-artifact@v2
-#         with:
-#           name: windows-build
-#           path: target/release/
-    
-#   build-mac:
-#     name: Mac Build
-#     runs-on: macos-latest
-    
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v3
-#       - name: Build
-#         run: cargo build --release
-#       - name: Capture Build Artifact
-#         uses: actions/upload-artifact@v2
-#         with:
-#           name: mac-build
-#           path: target/release/
-
   build:
     runs-on: ubuntu-latest
+    
     permissions:
       contents: write
+      
     steps:
       - uses: actions/checkout@v3
       
@@ -66,21 +24,13 @@ jobs:
         run: cross build --target x86_64-unknown-linux-gnu --release
       - name: Build-win
         run: cross build --target x86_64-pc-windows-gnu --release
-      - name: Build-macos-x86_64
-        run: cross build --target x86_64-apple-darwin --release
-      - name: Build-macos-aarch64
-        run: cross build --target aarch64-apple-darwin --release
         
       - name: Package Linux
         run: tar -czvf supra-linux-x86_64.tar.gz -C target/x86_64-unknown-linux-gnu/release/ supra
       - name: Package Windows
         run: zip -j supra-windows-x86_64.zip target/x86_64-pc-windows-gnu/release/supra.exe
-      - name: Package MacOS (Intel)
-        run: zip -j supra-macos-x86_64.zip target/x86_64-apple-darwin/release/ supra
-      - name: Package MacOS (Apple Silicon)
-        run: zip -j supra-macos-aarch64.zip target/aarch64-apple-darwin/release/ supra
         
-      - name: Upload Linxu
+      - name: Upload Linux
         uses: actions/upload-artifact@v2
         with:
           name: linux-release
@@ -90,13 +40,3 @@ jobs:
         with:
           name: windows-release
           path: supra-windows-x86_64.zip
-      - name: Upload MacOS (Intel)
-        uses: actions/upload-artifact@v2
-        with:
-          name: macos-intel-release
-          path: supra-macos-x86_64.zip
-      - name: Upload MacOS (Apple Silicon)
-        uses: actions/upload-artifact@v2
-        with:
-          name: macos-apple-silicon-release
-          path: supra-macos-aarch64.zip
