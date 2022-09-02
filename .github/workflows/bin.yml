@@ -1,4 +1,4 @@
-name: Build & Save Binaries
+name: Save Binaries
 
 on:
   workflow_dispatch:
@@ -8,46 +8,77 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    name: Linux Build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Build
-      run: cargo build --release
-    - name: Capture Build Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: linux-build
-        path: target/release/
+#   build:
+#     name: Linux Build
+#     runs-on: ubuntu-latest
+#     steps:
+#     - name: Checkout
+#       uses: actions/checkout@v3
+#     - name: Build
+#       run: cargo build --release
+#     - name: Capture Build Artifact
+#       uses: actions/upload-artifact@v2
+#       with:
+#         name: linux-build
+#         path: target/release/
 
-  build-win:
-    name: Windows Build
-    runs-on: windows-latest
+#   build-win:
+#     name: Windows Build
+#     runs-on: windows-latest
     
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
+#       - name: Build
+#         run: cargo build --release
+#       - name: Capture Build Artifact
+#         uses: actions/upload-artifact@v2
+#         with:
+#           name: windows-build
+#           path: target/release/
+    
+#   build-mac:
+#     name: Mac Build
+#     runs-on: macos-latest
+    
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
+#       - name: Build
+#         run: cargo build --release
+#       - name: Capture Build Artifact
+#         uses: actions/upload-artifact@v2
+#         with:
+#           name: mac-build
+#           path: target/release/
+
+  release:
+    name: Release ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-windows-gnu
+            archive: zip
+          - target: x86_64-unknown-linux-musl
+            archive: tar.gz tar.xz
+          - target: x86_64-apple-darwin
+            archive: zip
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Build
-        run: cargo build --release
-      - name: Capture Build Artifact
-        uses: actions/upload-artifact@v2
+      - uses: actions/checkout@v3
+      - name: Compile and release
+        uses: rust-build/rust-build.action@v1.3.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: windows-build
-          path: target/release/
-    
-  build-mac:
-    name: Mac Build
-    runs-on: macos-latest
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Build
-        run: cargo build --release
-      - name: Capture Build Artifact
-        uses: actions/upload-artifact@v2
+          RUSTTARGET: ${{ matrix.target }}
+          EXTRA_FILES: "README.md LICENSE.md"
+          ARCHIVE_TYPES: ${{ matrix.archive }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         with:
-          name: mac-build
-          path: target/release/
+          name: Binary
+          path: |
+            ${{ steps.compile.outputs.BUILT_ARCHIVE }}
+            ${{ steps.compile.outputs.BUILT_CHECKSUM }}
