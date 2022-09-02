@@ -52,26 +52,29 @@ jobs:
 #           name: mac-build
 #           path: target/release/
 
-  release:
-    name: Release ${{ matrix.target }}
+  build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - target: x86_64-pc-windows-gnu
-            archive: zip
-          - target: x86_64-unknown-linux-musl
-            archive: tar.gz tar.xz
-          - target: x86_64-apple-darwin
-            archive: zip
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v3
-      - name: Compile
-        uses: rust-build/rust-build.action@v1.3.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup
+        run: cargo install -f cross
+      - name: Build-linux
+        run: cross build --target x86_64-unknown-linux-gnu --release
+      - name: Build-win
+        run: cross build --target x86_64-pc-windows-gnu --release
+      - name: Package Linux
+        run: tar -czvf supra-linux-x86_64.tar.gz -C target/x86_64-unknown-linux-gnu/release/ supra
+      - name: Package Windows
+        run: zip supra-windows-x86_64.zip target/x86_64-pc-windows-gnu/release/supra.exe
+      - name: Upload Linxu
+        uses: actions/upload-artifact@v2
         with:
-          RUSTTARGET: ${{ matrix.target }}
-          ARCHIVE_TYPES: ${{ matrix.archive }}
-        
+          name: linux-release
+          path: supra-linux-x86_64.tar.gz
+      - name: Uplaod Windows
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-release
+          path: supra-windows-x86_64.zip
