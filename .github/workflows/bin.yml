@@ -58,16 +58,28 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v3
+      
       - name: Setup
         run: cargo install -f cross
+        
       - name: Build-linux
         run: cross build --target x86_64-unknown-linux-gnu --release
       - name: Build-win
         run: cross build --target x86_64-pc-windows-gnu --release
+      - name: Build-macos-x86_64
+        run: cross build --target x86_64-apple-darwin --release
+      - name: Build-macos-aarch64
+        run: cross build --target aarch64-apple-darwin --release
+        
       - name: Package Linux
         run: tar -czvf supra-linux-x86_64.tar.gz -C target/x86_64-unknown-linux-gnu/release/ supra
       - name: Package Windows
-        run: zip supra-windows-x86_64.zip target/x86_64-pc-windows-gnu/release/supra.exe
+        run: zip -j supra-windows-x86_64.zip target/x86_64-pc-windows-gnu/release/supra.exe
+      - name: Package MacOS (Intel)
+        run: zip -j supra-macos-x86_64.zip target/x86_64-apple-darwin/release/ supra
+      - name: Package MacOS (Apple Silicon)
+        run: zip -j supra-macos-aarch64.zip target/aarch64-apple-darwin/release/ supra
+        
       - name: Upload Linxu
         uses: actions/upload-artifact@v2
         with:
@@ -78,3 +90,13 @@ jobs:
         with:
           name: windows-release
           path: supra-windows-x86_64.zip
+      - name: Upload MacOS (Intel)
+        uses: actions/upload-artifact@v2
+        with:
+          name: macos-intel-release
+          path: supra-macos-x86_64.zip
+      - name: Upload MacOS (Apple Silicon)
+        uses: actions/upload-artifact@v2
+        with:
+          name: macos-apple-silicon-release
+          path: supra-macos-aarch64.zip
