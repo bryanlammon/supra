@@ -26,9 +26,9 @@ jobs:
         run: cross build --target x86_64-pc-windows-gnu --release
         
       - name: Package Linux
-        run: tar -czvf supra-linux-x86_64.tar.gz -C target/x86_64-unknown-linux-gnu/release/ supra
+        run: tar -czvf supra-linux-x86_64.tar.gz -C target/x86_64-unknown-linux-gnu/release/supra readme.md license.md
       - name: Package Windows
-        run: zip -j supra-windows-x86_64.zip target/x86_64-pc-windows-gnu/release/supra.exe
+        run: zip -j supra-windows-x86_64.zip target/x86_64-pc-windows-gnu/release/supra.exe readme.md license.md
         
       - name: Upload Linux
         uses: actions/upload-artifact@v2
