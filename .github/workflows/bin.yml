@@ -20,7 +20,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: linux-build
-        path: target/release/supra
+        path: target/release/
 
   build-win:
     name: Windows Build
@@ -35,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: windows-build
-          path: target/release/supra.exe
+          path: target/release/
     
   build-mac:
     name: Mac Build
@@ -50,4 +50,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: mac-build
-          path: target/release/supra
+          path: target/release/
