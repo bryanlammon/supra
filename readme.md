@@ -225,7 +225,7 @@ source_dir := ./src/
 build_dir := ./build/
 
 source_file := $(source_dir)input.md
-docx_file := $(build_dir)output.md
+docx_file := $(build_dir)output.docx
 
 docx_reference := ../_build-tools/pandoc-custom-reference.docx
 supra_lib := ../_build-tools/my-library.json
@@ -249,4 +249,5 @@ docx: $(docx_file)
 ## Changelog
 
 * 0.1.0: Initial release
-* 0.1.0: Fixed readme & blank-user journal command
+* 0.1.1: Fixed readme & blank-user journal command
+* 0.1.2: Typo in documentation
