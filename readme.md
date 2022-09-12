@@ -22,14 +22,14 @@ Supra is a [Pandoc](https://pandoc.org) wrapper for legal scholarship.
     - [Tabs After Footnotes](#tabs-after-footnotes)
     - [Non-Superscript Footnote Numbers](#non-superscript-footnote-numbers)
     - [Running Header](#running-header)
-- [Makefile](#makefile)
+- [````yaml](#yaml)
 - [Changelog](#changelog)
 
 ## About
 
 Supra is a [Pandoc](https://pandoc.org) wrapper for legal scholarship.
 Pandoc is great for academic writing.
-But there are several aspects of legal scholarship that Pandoc doesn't deal with, particularly the innumerable footnotes with oodles of cross-references—*i.e.*, *supra* notes.
+But there are several aspects of legal scholarship that Pandoc doesn't deal with well, particularly the innumerable footnotes with oodles of cross-references—*i.e.*, *supra* notes.
 
 Supra makes Pandoc more useful for writing legal scholarship.
 Its main feature is a pre-processor that (1) inserts citations for common source types that use cross-references, (2) adds cross-references for those sources in subsequent footnotes, and (3) adds cross-references among footnotes.
@@ -44,8 +44,8 @@ And while the pre-processor can be used without [Pandoc](https://pandoc.org)—o
 ### Supra Markup
 
 Supra's main feature is processing citations and cross-references.
-It searches the footnotes in a Pandoc document for certain kinds of sources (see [Supported Source Types](#supported-source-types-csl-json) below).
-Using a CSL JSON library, the pre-processor changes the first citation to the standard full citation form that follows the [Indigo Book](https://law.resource.org/pub/us/code/blue/IndigoBook.html) guiedlines.
+It searches the footnotes in a Pandoc document for certain kinds of sources (see [Supported Source Types](#source-library) below).
+Using a CSL JSON library, the pre-processor changes the first citation to the standard full citation form, follwoing the [Indigo Book](https://law.resource.org/pub/us/code/blue/IndigoBook.html) guidelines.
 It then changes all subsequent citations to the "*supra* note" format with the correct footnote number.
 If multiple citations have the same author, Supra also adds a "hereinafter" to the long cite and a short title to subsequent cites.
 Finally, Supra looks for cross-references in and to other footnotes.
@@ -88,7 +88,7 @@ Some text.^[*See* [@Smith2004] 123.]
 
 Some more text.^[*See also* [@Jones2003] at 123 n.4.]
 
-Even more text.^[*See* [@Williams] §\ 3944.]
+Even more text.^[*See* [@Smith2004] 123; [@Williams] §\ 3944.]
 
 # Use "tk" for unknown page numbers (e.g., forthcoming articles)
 I'm not sure what page I'm referring to yet.^[*But see*
@@ -99,13 +99,12 @@ An "at" is optional, and Supra will ensure that citation types that require an "
 
 #### Internal Cross-References
 
-Supra can also add cross-reference to other footnotes.
+Supra can also add cross-references to other footnotes.
 This requires adding an ID to the referred-to footnote, which is a unique string that begins with a `?`, is surrounded by brackets, and is the first thing in the footnote.
 The footnote can then be referred to with that ID.
 
 Supra will not add *supra*, *infra*, or the word "note" to cross-references.
-Supra can't tell whether the cross-references come before or after the ID'd footnote, so it doesn't know whether *supra* or *infra* is appropriate.
-And there are many ways of phrasing internal cross-references (*e.g.*, *see* *supra* note 1; *see* *supra* text accompanying notes 1–2; *see* *infra* notes 3 & 4 and accompanying text).
+There are too many ways of phrasing internal cross-references (*e.g.*, *see* *supra* note 1; *see* *supra* text accompanying notes 1–2; *see* *infra* notes 3 & 4 and accompanying text).
 Supra doesn't know which phrasing you want.
 So you must write the rest of the internal cross-reference yourself.
 
@@ -114,7 +113,8 @@ Otherwise, Supra will not recognize the cross-reference.
 
 ```Markdown
 # A Footnote with a Cross-References
-Some text.^[[?id1] This footnote has an ID.]
+Some text.^[[?id1] This footnote has an ID. For another
+footnote, see *infra* note [?id2].]
 
 # Referring Back to a Footnote
 Some more text.^[[?id2] For another footnote, see *supra*
@@ -127,7 +127,7 @@ accompanying text.]
 
 ### Source Library
 
-Supra gets citation information from your source library in [CSL JSON](https://citationstyles.org) format.
+Supra gets citation information from your source librarym which must be in [CSL JSON](https://citationstyles.org) format.
 One easy way to create and continually update a CSL JSON library is to use [Zotero](https://www.zotero.org) (for reference management) and the [Better BibTeX for Zotero](https://retorque.re/zotero-better-bibtex/) plugin (to automatically create and update the CSL JSON library).
 
 Supra currently supports four source types:
@@ -138,7 +138,7 @@ Supra currently supports four source types:
 * Unpublished manuscripts.
 
 For books, book chapters, and consecutively paginated journal articles, Supra uses the expected CSL JSON fields.
-For manuscripts, you can add `volume` and `container-title` fields to produce a citation in "forthcoming" format, *e.g.,* June Smith, *An Article About Someting*, 10 Law J. (forthcoming 2021).
+For unpublished manuscripts that are forthcoming in a law review, you can add `volume` and `container-title` fields to produce a citation in "forthcoming" format, *e.g.,* June Smith, *An Article About Someting*, 10 Law J. (forthcoming 2021).
 In Zotero, you can enter those on separate lines in the "Extra" field:
 
 ```Markdown
@@ -146,11 +146,12 @@ container-title: Law Journal
 volume: 10
 ```
 
-There is also limited support for non-consecutively paginated journals, book reviews, student-written material, and treatises that have non-page-number pincites (e.g., §\ 1001).
+There is also limited support for non-consecutively paginated journals, book reviews, student-written material, and treatises that have non-page-number pincites (e.g., § 1001).
 
 ## Usage & Options
 
-Supra is a command-line program, and it operates in three stages: (1) a [Pandoc pre-processor](#the-pre-processor--supra-markup), (2) an [optional call to Pandoc](#pandoc), and (3) an [optional post-processor](#post-processing-the-pandoc-output) for the Pandoc output.
+Supra is a command-line program.
+It operates in three stages: (1) a [Pandoc pre-processor](#pre-procesor-options), (2) an [optional call to Pandoc](#pandoc-options), and (3) an [optional post-processor](#post-processing-options) for the Pandoc output.
 
 ### Basic Usage
 
@@ -180,7 +181,8 @@ supra input.md library.json output.docx
 ```
 
 Finally, an optional fourth argument is the Pandoc [custom reference file](https://pandoc.org/MANUAL.html#option--reference-doc).
-This of course requires an output file with a `.docx` extension; otherwise Pandoc would not be run and the custom reference would be useless.
+This of course requires that the third argument (the output file) end with a `.docx` extension.
+Otherwise Pandoc would not be run and the custom reference would be useless.
 
 ```sh
 # Using a custom reference
@@ -200,7 +202,7 @@ The pre-processor has a few additional options.
 A Pandoc lua filter can set certain text to small caps (e.g., [bolded text to small caps](https://pandoc.org/lua-filters.html)).
 If outputting to a docx file, however, the text is not [true small caps](https://en.wikipedia.org/wiki/Small_caps#Word_processors).
 
-Supra includes a flag to set bolded text to a Word style called "True Small Caps."
+Supra includes a flag to set bolded text to a Word style called "Small Caps."
 That Word style can then apply true small caps via the appropriate font.
 This flag can be set with `-s` or `--smallcaps`.
 This is useful only if the output docx file has a "Small Caps" style.
@@ -212,21 +214,24 @@ If using this flag and a [custom reference file](https://pandoc.org/MANUAL.html#
 -f/--offset
 ```
 
-Supra normally assumes that the first footnote in a document is numbered 1, the second 2, etc.
-If you plan to change the numbers for any footnotes—say, to turn the first footnote into a \*—then you need to offset the footnote counter.
+Supra normally assumes that the first footnote in a document is numbered 1.
+If you plan to later change the numbers for any footnotes in the Word document—say, to start at a later number—then you need to offset the footnote counter.
 The offset counter is invoked with the `-f` or `--offset` argument.
-To skip some of the first footnotes, follow the argument with a negative number.
+To skip one or more footnotes—that is, treat the second or later footnote as "note 1"—follow the argument with a negative number.
 To start at a later number, follow the argument with a positive number.
 
 ```sh
-# Skip the first footnote
+# Skip the first footnote; all references to the second
+# footnote in the document will call it "note 1"
 supra input.md library.json output.md -f -1
 
 # Start footnote numbering at 100
 supra input.md library.json output.md -f 99
 ```
 
-I'll note, however, that it's much easier to use the `-a/--author` option to add an author note.
+The only scenario in which a negative number might be useful is if you want to use the first footnote as an author note.
+But that requires a lot of fiddling with Word.
+It's much easier to just use the [`-a/--author`](#insert-author-note) option.
 
 #### User Journal File
 
@@ -236,9 +241,9 @@ I'll note, however, that it's much easier to use the `-a/--author` option to add
 
 Supra has a built-in list of short names for about 400 common law journals.
 (See [`src/sourcemap/buildsource/journalnames.rs`](https://github.com/bryanlammon/supra/blob/main/src/sourcemap/buildsource/journalnames.rs).)
-It will also attempt to abbreviate journal names that it does not know, and you will be notified of these attempts when running Supra.
+It will also attempt to abbreviate journal names that it does not know using the Indigo Book guidelines, and you will be notified of these attempts when running Supra.
 
-You can supply your own collection of abbreviated journal names.
+You can also supply your own collection of abbreviated journal names.
 The names must be in the form of a user-journal file.
 You can create a blank user-journal file by running `supra uj`.
 This will create a file called `blank-user-journals.ron`.
@@ -268,19 +273,22 @@ If you *really* want to overwrite the input file, you must add the flag `-W` or 
 ### Pandoc Options
 
 Supra's second step is an optional use of Pandoc.
-If you send Supra's output to the terminal or a Markdown file (see [Usage](#usage)), neither Pandoc nor the post-processor will run.
+If you send Supra's output to the terminal or a Markdown file, neither Pandoc nor the post-processor will run.
 But if you set your output to a `.docx` file, Supra will run the pre-processor's output through Pandoc, producing a `.docx` file.
 
 As noted above in [Basic Usage](#basic-usage), Supra also allows the use of a [custom reference](https://pandoc.org/MANUAL.html#options-affecting-specific-writers).
 Supra comes with two custom reference files, both of which work with all of Supra's options:
 
 * `supra-reference.docx`, which uses common legal scholarship formatting, and
-* `supra-refrence-book.docx`, which uses my preferred formatting.
+* `supra-reference-book.docx`, which uses my preferred formatting.
 
-Use of `supra-refrence-book.docx` requires that you have the fonts Cormorant Garamond and Cormorant SC installed.
+Use of `supra-reference-book.docx` requires that you have the fonts Cormorant Garamond and Cormorant SC installed.
 You can download them [here](https://github.com/CatharsisFonts/Cormorant).
 
 ### Post-Processing Options
+
+Supra can also make some edits to the `.xml` markup in the `.docx` file that Pandoc produces.
+These can make the journal-editing stage of law review writing easier, and they can reduce (or maybe even eliminate) the time that you must spend in Microsoft Word.
 
 #### Automatically Updating Cross-References
 
@@ -300,31 +308,31 @@ With automatically updating cross-references, you just need to tell Word to [upd
 -a/--author
 ```
 
-Adds an author note (sometimes called a star footnote), using metadata from the Pandoc file.
+Adds an author note (sometimes called a star footnote or asterisk footnote), using metadata from the Pandoc file.
 
 Given that author notes normally aren't numbered, I recommend against adding them directly in your Pandoc document.
 You can instead add an `author_note` field to the [YAML metadata block](https://pandoc.org/MANUAL.html#extension-yaml_metadata_block) in your Pandoc document:
 
-```yaml
----
-title: The Article Title
-author: Author's Name
-author_note: A note about the author.
-\```
+````yaml
+    ---
+    title: The Article Title
+    author: Author's Name
+    author_note: A note about the author.
 ```
+````
 
 The post-processor will find the last word in the `author` field, add a star (*i.e.*, \*) footnote, and use the contents of `author_note` for that * footnote's contents.
 Note, this option requires only a single `author` entry and a single note.
 If there are multiple authors, they should all be entered as one author in the YAML metadata block for this option to work.
 E.g.,
 
-```yaml
+````yaml
 ---
 title: The Article Title
 author: Author One & Author Two
 author_note: A note about Author One. And a note about Author Two.
-\```
 ```
+````
 
 #### Tabs After Footnotes
 
@@ -334,7 +342,7 @@ author_note: A note about Author One. And a note about Author Two.
 
 Replaces the spaces after footnote numbers with tabs.
 
-In my article formatting (which is that output using [`supra-refrence-book.docx`](#pandoc)), I prefer tabs rather than spaces after footnote numbers.
+In my article formatting (output using [`supra-reference-book.docx`](#pandoc-options)), I prefer tabs rather than spaces after footnote numbers.
 This option replaces the spaces after the numbers with tabs.
 Note, this affects only the footnote markers at the bottom of the page; footnote markers in the body text are unchanged.
 
@@ -346,7 +354,7 @@ Note, this affects only the footnote markers at the bottom of the page; footnote
 
 Puts footnote numbers on the baseline.
 
-In my article formatting (which is that output using [`supra-refrence-book.docx`](#pandoc)), I prefer footnote markers be on the basline rather than superscript.
+In my article formatting (output using [`supra-reference-book.docx`](#pandoc-options)), I prefer footnote markers be on the basline rather than superscript.
 This option puts them on the baseline.
 Note, this affects only the footnote markers at the bottom of the page; footnote markers in the body text are unchanged.
 
@@ -359,25 +367,28 @@ Note, this affects only the footnote markers at the bottom of the page; footnote
 Adds the year and short title to the header.
 
 Supra's custom references include running headers, with a short title on every page and the year of the draft on odd pages.
-You must add this information as `year` and `running_header` fields to the [YAML metadata block](https://pandoc.org/MANUAL.html#extension-yaml_metadata_block) in your Pandoc document:
+This option fills those placeholders in.
+To use this option, you must add the necessary information to `year` and `running_header` fields to the [YAML metadata block](https://pandoc.org/MANUAL.html#extension-yaml_metadata_block) in your Pandoc document:
 
-```yaml
+````yaml
 ---
 title: The Article Title
 author: Author's Name
 year: 2022
 running_header: Title
-\```
 ```
+````
 
-Note, you must use a compatible [custom reference](#pandoc) for this option to work.
+Note, you must use a compatible [custom reference](#pandoc-options) for this option to work.
 Both of the custom references provided with Supra are compatible.
 
 ## Makefile
 
 The easiest way to use Supra is via a [Makefile](https://www.gnu.org/software/make/manual/make.html).
 That way you can keep your reference library and custom Pandoc reference separate from any one project and use them library for all projects.
-For example:
+Below is adapted from the Makefile I use.
+The `.md` input and `.docx` output go in separate directories inside a project.
+The Supra library and Pandoc custom reference reside in a `/_build-tools/` directory that sits one level up, next to all of the project folders.
 
 ```Makefile
 .PHONY: docx
@@ -386,10 +397,9 @@ source_dir := ./src/
 build_dir := ./build/
 
 source_file := $(source_dir)input.md
-docx_file := $(build_dir)output.docx
-
-docx_reference := ../_build-tools/pandoc-custom-reference.docx
 supra_lib := ../_build-tools/my-library.json
+docx_file := $(build_dir)output.docx
+docx_reference := ../_build-tools/supra-reference-book.docx
 
 build_tools :=\
     $(docx_reference) \
@@ -400,7 +410,7 @@ $(docx_file): $(source_file) $(build_tools)
     $(source_file) \
     $(supra_lib) \
     $(docx_file) \
-    $(docx_reference_book) \
+    $(docx_reference) \
     -scatnr
 
 docx: $(docx_file)
