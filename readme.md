@@ -19,10 +19,11 @@ Supra is a [Pandoc](https://pandoc.org) wrapper for legal scholarship.
   - [Post-Processing Options](#post-processing-options)
     - [Automatically Updating Cross-References](#automatically-updating-cross-references)
     - [Insert Author Note](#insert-author-note)
+- [````yaml](#yaml)
     - [Tabs After Footnotes](#tabs-after-footnotes)
     - [Non-Superscript Footnote Numbers](#non-superscript-footnote-numbers)
     - [Running Header](#running-header)
-- [````yaml](#yaml)
+- [````yaml](#yaml-1)
 - [Changelog](#changelog)
 
 ## About
@@ -308,16 +309,16 @@ With automatically updating cross-references, you just need to tell Word to [upd
 -a/--author
 ```
 
-Adds an author note (sometimes called a star footnote or asterisk footnote), using metadata from the Pandoc file.
+Adds an author note (sometimes called a star footnote or asterisk footnote) using metadata from the Pandoc file.
 
 Given that author notes normally aren't numbered, I recommend against adding them directly in your Pandoc document.
 You can instead add an `author_note` field to the [YAML metadata block](https://pandoc.org/MANUAL.html#extension-yaml_metadata_block) in your Pandoc document:
 
 ````yaml
-    ---
-    title: The Article Title
-    author: Author's Name
-    author_note: A note about the author.
+---
+title: The Article Title
+author: Author's Name
+author_note: A note about the author.
 ```
 ````
 
