@@ -4,7 +4,7 @@ mod citetools;
 mod journalnames;
 mod replacements;
 
-use crate::{
+use crate::pre::{
     csljson::CSLSource, sourcemap::Source, sourcemap::SourceType, userjournals::UserJournals,
 };
 use ansi_term::Color;
@@ -387,6 +387,11 @@ pub fn build_source(
                 "No short title found for {}; using long title for possible hereinafters",
                 Color::Blue.paint(&csl_source.id)
             );
+            eprintln!(
+                "  {} No short title found for {}; using long title for possible hereinafters",
+                Color::Yellow.paint("WARN"),
+                Color::Blue.paint(&csl_source.id)
+            )
         }
 
         let new_source = Source {
@@ -422,7 +427,7 @@ mod tests {
 
     mod build_tests {
         use super::*;
-        use crate::csljson;
+        use crate::pre::csljson;
 
         #[test]
         fn build_book() {

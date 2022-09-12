@@ -1,6 +1,6 @@
 //! This module contains functions for building the cross-reference map.
 
-use crate::parser::Branch;
+use crate::pre::parser::Branch;
 use slog::debug;
 use std::collections::HashMap;
 

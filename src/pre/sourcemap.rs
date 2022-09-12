@@ -157,7 +157,13 @@ fn start_source_map<'a>(
                                         Err(e) => {
                                             warn!(
                                                 slog_scope::logger(),
-                                                "Cannoit build citation for {}; {}",
+                                                "Cannot build citation for {}; {}",
+                                                Color::Blue.paint(csl_id),
+                                                e
+                                            );
+                                            eprintln!(
+                                                "  {} Cannot build citation for {}; {:?}",
+                                                Color::Yellow.paint("WARN"),
                                                 Color::Blue.paint(csl_id),
                                                 e
                                             )
@@ -171,6 +177,12 @@ fn start_source_map<'a>(
                                         Color::Blue.paint(csl_id),
                                         csl_source.source_type.as_ref().unwrap(),
                                     );
+                                    eprintln!(
+                                        "  {} {}'s type ({}) is not supported; not adding to source map",
+                                        Color::Yellow.paint("WARN"),
+                                        Color::Blue.paint(csl_id),
+                                        csl_source.source_type.as_ref().unwrap(),
+                                    );
                                 }
                             } else {
                                 // No type in the CSL library
@@ -179,11 +191,19 @@ fn start_source_map<'a>(
                                     "{} does not have a type; not adding to source map",
                                     Color::Blue.paint(csl_id),
                                 );
+                                eprintln!(
+                                    "  {} {} does not have a type; not adding to source map",
+                                    Color::Yellow.paint("WARN"),
+                                    Color::Blue.paint(csl_id)
+                                );
                             }
                         } else {
                             // Citation was not found in the CSL JSON library
-                            warn!(slog_scope::logger(), "{}  was not found in the CSL JSON library; not adding to source map", Color::Blue.paint(csl_id)
-                        );
+                            warn!(slog_scope::logger(), "{} was not found in the CSL JSON library; not adding to source map", Color::Blue.paint(csl_id));
+                            eprintln!("  {} {} was not found in the CSL JSON library; not adding to source map",
+                                Color::Yellow.paint("WARN"),
+                                Color::Blue.paint(csl_id)
+                            );
                         }
                     } else {
                         // The key is already in the sourcemap. Add the footnote
