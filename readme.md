@@ -19,11 +19,10 @@ Supra is a [Pandoc](https://pandoc.org) wrapper for legal scholarship.
   - [Post-Processing Options](#post-processing-options)
     - [Automatically Updating Cross-References](#automatically-updating-cross-references)
     - [Insert Author Note](#insert-author-note)
-- [````yaml](#yaml)
     - [Tabs After Footnotes](#tabs-after-footnotes)
     - [Non-Superscript Footnote Numbers](#non-superscript-footnote-numbers)
     - [Running Header](#running-header)
-- [````yaml](#yaml-1)
+- [Makefile](#makefile)
 - [Changelog](#changelog)
 
 ## About
@@ -314,26 +313,26 @@ Adds an author note (sometimes called a star footnote or asterisk footnote) usin
 Given that author notes normally aren't numbered, I recommend against adding them directly in your Pandoc document.
 You can instead add an `author_note` field to the [YAML metadata block](https://pandoc.org/MANUAL.html#extension-yaml_metadata_block) in your Pandoc document:
 
-````yaml
+```yaml
 ---
 title: The Article Title
 author: Author's Name
 author_note: A note about the author.
+---
 ```
-````
 
 The post-processor will find the last word in the `author` field, add a star (*i.e.*, \*) footnote, and use the contents of `author_note` for that * footnote's contents.
 Note, this option requires only a single `author` entry and a single note.
 If there are multiple authors, they should all be entered as one author in the YAML metadata block for this option to work.
 E.g.,
 
-````yaml
+```yaml
 ---
 title: The Article Title
 author: Author One & Author Two
 author_note: A note about Author One. And a note about Author Two.
+---
 ```
-````
 
 #### Tabs After Footnotes
 
@@ -371,14 +370,14 @@ Supra's custom references include running headers, with a short title on every p
 This option fills those placeholders in.
 To use this option, you must add the necessary information to `year` and `running_header` fields to the [YAML metadata block](https://pandoc.org/MANUAL.html#extension-yaml_metadata_block) in your Pandoc document:
 
-````yaml
+```yaml
 ---
 title: The Article Title
 author: Author's Name
 year: 2022
 running_header: Title
+---
 ```
-````
 
 Note, you must use a compatible [custom reference](#pandoc-options) for this option to work.
 Both of the custom references provided with Supra are compatible.
