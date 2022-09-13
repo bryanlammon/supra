@@ -104,12 +104,12 @@ Supra can also add cross-references to other footnotes.
 This requires adding an ID to the referred-to footnote, which is a unique string that begins with a `?`, is surrounded by brackets, and is the first thing in the footnote.
 The footnote can then be referred to with that ID.
 
-Supra will not add *supra*, *infra*, or the word "note" to cross-references.
+Supra will not add *supra*, *infra*, or the word "note" to these cross-references.
 There are too many ways of phrasing internal cross-references (*e.g.*, *see* *supra* note 1; *see* *supra* text accompanying notes 1–2; *see* *infra* notes 3 & 4 and accompanying text).
 Supra doesn't know which phrasing you want.
 So you must write the rest of the internal cross-reference yourself.
 
-Note, if you want to your footnote cross-references to be automatically updated fields (using the post-processor options), ensure that there are no commas after *infra* or *supra*.
+Note, if you want your footnote cross-references to be automatically updated fields (using the [post-processor options](#automatically-updating-cross-references)), ensure that there are no commas after *infra* or *supra*.
 Otherwise, Supra will not recognize the cross-reference.
 
 ```Markdown
