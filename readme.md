@@ -90,7 +90,8 @@ Some more text.^[*See also* [@Jones2003] at 123 n.4.]
 
 Even more text.^[*See* [@Smith2004] 123; [@Williams] §\ 3944.]
 
-# Use "tk" for unknown page numbers (e.g., forthcoming articles)
+# You can use "tk" for unknown page numbers (e.g.,
+# forthcoming articles)
 I'm not sure what page I'm referring to yet.^[*But see*
 [@Johnson2021] at tk.]
 ```
