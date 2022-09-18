@@ -25,6 +25,8 @@ Supra lets you write legal scholarship in Markdown.
 - [Recommended Project Organization](#recommended-project-organization)
   - [New Project](#new-project)
   - [Makefile](#makefile)
+    - [Replace Makefile](#replace-makefile)
+    - [Sample Makefile](#sample-makefile)
 - [Changelog](#changelog)
 
 ## About
@@ -301,7 +303,12 @@ Supra comes with two custom reference files, both of which work with all of Supr
 * [`supra-reference-cs.docx`](https://github.com/bryanlammon/supra/blob/main/supra-reference-cs.docx), which uses common legal scholarship formatting, and
 * [`supra-reference-cormorant.docx`](https://github.com/bryanlammon/supra/blob/main/supra-reference-cormorant.docx), which uses my preferred formatting.
 
-Note, use of `supra-reference-cormorant.docx` requires that you have the fonts Cormorant Garamond and Cormorant SC installed.
+Both are formatted to look similar to published law review articles.
+`supra-reference-cs.docx` is typeset in Century Schoolbook, and it has the wide margins you often see in PDFs of published articles.
+It's a good default option.
+`supra-reference-cormorant.docx` is my preference.
+It is styled a little differently and uses narrow margins for easy reading on a tablet.
+It also requires that you have the fonts Cormorant Garamond and Cormorant SC installed.
 You can download them [here](https://github.com/CatharsisFonts/Cormorant).
 
 ### Post-Processing Options
@@ -455,12 +462,41 @@ It also provides a space to write an abstract, using the abstract formatting in 
 
 Note, the name cannot contain any spaces or characters that shouldn't go in directory or file names.
 
+By default, Supra will not overwrite your Markdown file or Makefile.
+If you *really* want to overwrite the existing files, add option `-W` or `--force_overwrite`.
+
+```sh
+# Make a new project called article
+supra new article
+
+# Overwrite the Markdown file and Makefile in the article
+# folder
+supra new article -W
+```
+
 ### Makefile
 
 Even if you don't use the above approach, it's still easy to use Supra via a [Makefile](https://www.gnu.org/software/make/manual/make.html).
 And I highly recommend one.
 That way you can keep your reference library and custom Pandoc reference separate from any one project and use them library for all projects.
-Below is adapted from the Makefile I use.
+
+#### Replace Makefile
+
+```sh
+rmake
+```
+
+If you ever want to replace a Makefile in the current directory with Supra's default Makefile, you can run the subcommand `rmake`.
+
+```sh
+# Overwrite the Makefile in the current directory
+supra rmake
+```
+
+#### Sample Makefile
+
+If you don't use Supra's model project structure, you can still write your own Makefile.
+Below is adapted from the one I use.
 The `.md` input and `.docx` output go in separate directories inside a project.
 The Supra library and Pandoc custom reference reside in a `/_build-tools/` directory that sits one level up, next to all of the project folders.
 
@@ -473,7 +509,7 @@ build_dir := ./build/
 source_file := $(source_dir)input.md
 supra_lib := ../_build-tools/my-library.json
 docx_file := $(build_dir)output.docx
-docx_reference := ../_build-tools/supra-reference-cormorant.docx
+docx_reference := ../_build-tools/supra-reference-cs.docx
 
 build_tools :=\
     $(docx_reference) \
