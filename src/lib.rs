@@ -1,5 +1,4 @@
-//! The main Supra function. This calls the pre-processor, Pandoc, and the
-//! post-processor.
+//! Contains the main Supra function. Determines which part of Supra to run.
 
 pub mod config;
 mod fs;
@@ -9,32 +8,41 @@ mod pre;
 
 use crate::config::Output;
 use ansi_term::Color;
-use config::{SupraConfig, SupraSubcommand};
+use config::{SupraCommand, SupraConfig};
 use fs::load_file;
 use slog::{debug, error, o};
 use std::{path::Path, process};
 
 pub fn supra(config: SupraConfig) -> Result<(), String> {
-    // Check supra_subcommands
-    match config.supra_subcommand {
-        Some(SupraSubcommand::NewUserJournalFile) => {
+    // Check commands
+    match config.command {
+        SupraCommand::NewUserJournalFile => {
             debug!(slog_scope::logger(), "Creating blank user-journal file");
             fs::new_user_journals_ron();
             return Ok(());
         }
-        Some(SupraSubcommand::NewProject) => {
-            // TODO
+        SupraCommand::NewProject(name) => {
+            debug!(slog_scope::logger(), "Creating blank user-journal file");
+            fs::new_project(name);
+            return Ok(());
         }
-        None => (),
+        SupraCommand::Main => (
+            // TODO
+        ),
     }
 
     eprintln!("{} Starting Supra...", Color::Green.paint("INFO"));
 
     // Create paths fort the input, library, etc.
-    let input = Path::new(config.pre_config.input);
-    let library = Path::new(config.pre_config.library);
-    let output = config.pan_config.output.map(Path::new);
-    let pandoc_reference = config.pan_config.pandoc_reference.map(Path::new);
+    let input = Path::new(config.pre_config.as_ref().unwrap().input);
+    let library = Path::new(config.pre_config.as_ref().unwrap().library);
+    let output = config.pan_config.as_ref().unwrap().output.map(Path::new);
+    let pandoc_reference = config
+        .pan_config
+        .as_ref()
+        .unwrap()
+        .pandoc_reference
+        .map(Path::new);
 
     // Load the input
     let input =
@@ -63,7 +71,7 @@ pub fn supra(config: SupraConfig) -> Result<(), String> {
         };
 
     // Load the user journals, if any
-    let user_journals = match config.pre_config.user_journals {
+    let user_journals = match config.pre_config.as_ref().unwrap().user_journals {
         Some(u) => {
             match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "load_file()")), || {
                 load_file(Path::new(&u))
@@ -91,8 +99,8 @@ pub fn supra(config: SupraConfig) -> Result<(), String> {
             &input,
             &library,
             &user_journals,
-            config.pre_config.offset,
-            config.pre_config.smallcaps,
+            config.pre_config.as_ref().unwrap().offset,
+            config.pre_config.as_ref().unwrap().smallcaps,
         )
     }) {
         Ok(p) => p,
@@ -103,11 +111,11 @@ pub fn supra(config: SupraConfig) -> Result<(), String> {
         }
     };
 
-    // If no output or Markdown output were selected, output now
-    if config.output == Output::StandardOut {
+    // If no output or Markdown output was selected, output now
+    if config.output.as_ref().unwrap() == &Output::StandardOut {
         println!("{}", pre);
         return Ok(());
-    } else if config.output == Output::Markdown {
+    } else if config.output.as_ref().unwrap() == &Output::Markdown {
         // This can safely unwrap because an output must have been provided for
         // config.output to be set to Markdown
         return fs::save_file(output.unwrap(), &pre);
@@ -132,22 +140,22 @@ pub fn supra(config: SupraConfig) -> Result<(), String> {
 
     // If any post-processing options are true, run the post-processor on the
     // Pandoc .docx output
-    if config.post_config.autocref
-        || config.post_config.author_note
-        || config.post_config.tabbed_footnotes
-        || config.post_config.no_superscript
-        || config.post_config.running_header
+    if config.post_config.as_ref().unwrap().autocref
+        || config.post_config.as_ref().unwrap().author_note
+        || config.post_config.as_ref().unwrap().tabbed_footnotes
+        || config.post_config.as_ref().unwrap().no_superscript
+        || config.post_config.as_ref().unwrap().running_header
     {
         eprintln!("{} Post-processing...", Color::Green.paint("INFO"));
         match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "post()")), || {
             post::post(
                 &input,
                 output,
-                config.post_config.autocref,
-                config.post_config.author_note,
-                config.post_config.tabbed_footnotes,
-                config.post_config.no_superscript,
-                config.post_config.running_header,
+                config.post_config.as_ref().unwrap().autocref,
+                config.post_config.as_ref().unwrap().author_note,
+                config.post_config.as_ref().unwrap().tabbed_footnotes,
+                config.post_config.as_ref().unwrap().no_superscript,
+                config.post_config.as_ref().unwrap().running_header,
             )
         }) {
             Ok(p) => p,

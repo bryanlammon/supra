@@ -90,8 +90,141 @@ pub fn new_user_journals_ron() {
 }
 "#;
 
-    std::fs::write("blank-user-journals.ron", blank_ron)
+    fs::write("blank-user-journals.ron", blank_ron)
         .expect("Unable to write blank user-journals file");
+}
+
+/// Create a new project.
+pub fn new_project(name: &str) {
+    eprintln!(
+        "{} Creating new project {}",
+        Color::Green.paint("INFO"),
+        Color::Blue.paint(name)
+    );
+
+    // The filenames for a new project.
+    let root = format!("./{}/", name);
+    let src = format!("{}src/", root);
+    let build = format!("{}build/", root);
+    let makefile = format!("{}Makefile", root);
+    let md = format!("{}/{}.md", src, name);
+
+    // The contents of the files.
+    let makefile_contents = r#"# Supra Makefile
+
+.PHONY: all docx docx_cs md
+
+MAKEFLAGS += --silent
+
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+
+current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+source_dir := ./src/
+build_dir := ./build/
+
+source_file := $(source_dir)$(current_dir).md
+md_file := $(build_dir)$(current_dir).md
+docx_file := $(build_dir)$(current_dir).docx
+docx_file_cs :=$(build_dir)$(current_dir)-cs.docx
+
+docx_reference_book := ../_build-tools/supra-custom-reference-book.docx
+docx_reference_cs := ../_build-tools/supra-custom-reference-cs.docx
+supra_lib = ../_build-tools/my-library.json
+
+all: $(docx_file) $(docx_file_cs)
+
+build_tools :=\
+	Makefile \
+	$(docx_reference_book) \
+	$(docx_reference_cs) \
+	$(supra_lib)
+
+$(docx_file): $(source_file) $(build_tools)
+	supra \
+	$(source_file) \
+	$(supra_lib) \
+	$(docx_file) \
+	$(docx_reference_book) \
+	-scatnr
+
+$(docx_file_cs): $(source_file) $(build_tools)
+	supra \
+	$(source_file) \
+	$(supra_lib) \
+	$(docx_file_cs) \
+	$(docx_reference_cs) \
+	-scatnr
+
+$(md_file): $(source_file) $(build_tools)
+	supra \
+	$(source_file) \
+	$(supra_lib) \
+	$(md_file)
+
+docx: $(docx_file)
+
+docx_cs: $(docx_file_cs)
+
+md: $(md_file)"#;
+
+    let md_contents = r#"---
+title:
+author:
+author_note:
+year:
+running_header:
+...
+
+:::{custom-style="Abstract Title"}
+abstract
+:::
+
+:::{custom-style="Abstract First Paragraph"}
+tk
+:::
+
+:::{custom-style="Abstract Text"}
+tk
+:::
+"#;
+
+    // Try to create each directory and file
+    if let Err(e) = fs::create_dir(root) {
+        eprintln!(
+            "{} Error creating root diectory: {}",
+            Color::Red.paint("ERRO"),
+            e
+        );
+    };
+    if let Err(e) = fs::create_dir(src) {
+        eprintln!(
+            "{} Error creating source diectory: {}",
+            Color::Red.paint("ERRO"),
+            e
+        );
+    }
+    if let Err(e) = fs::create_dir(build) {
+        eprintln!(
+            "{} Error creating build diectory: {}",
+            Color::Red.paint("ERRO"),
+            e
+        );
+    }
+
+    if let Err(e) = fs::write(makefile, makefile_contents) {
+        eprintln!(
+            "{} Error creating Makefile: {}",
+            Color::Red.paint("ERRO"),
+            e
+        );
+    }
+    if let Err(e) = fs::write(md, md_contents) {
+        eprintln!(
+            "{} Error creating Markdown file: {}",
+            Color::Red.paint("ERRO"),
+            e
+        );
+    }
 }
 
 #[cfg(test)]

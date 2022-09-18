@@ -1,25 +1,25 @@
-//! The structures and functions for configuration, which must be accessible to main.
+//! The structures and functions for configuration. Must be accessible to main.
 
 /// The overall options.
 pub struct SupraConfig<'a> {
-    pub supra_subcommand: Option<SupraSubcommand>,
-    pub output: Output,
-    pub pre_config: PreConfig<'a>,
-    pub pan_config: PanConfig<'a>,
-    pub post_config: PostConfig,
+    pub command: SupraCommand<'a>,
+    pub output: Option<Output>,
+    pub pre_config: Option<PreConfig<'a>>,
+    pub pan_config: Option<PanConfig<'a>>,
+    pub post_config: Option<PostConfig>,
 }
 
 impl SupraConfig<'_> {
     #[allow(clippy::too_many_arguments)]
     pub fn new<'a>(
-        supra_subcommand: Option<SupraSubcommand>,
-        output: Output,
-        pre_config: PreConfig<'a>,
-        pan_config: PanConfig<'a>,
-        post_config: PostConfig,
+        command: SupraCommand<'a>,
+        output: Option<Output>,
+        pre_config: Option<PreConfig<'a>>,
+        pan_config: Option<PanConfig<'a>>,
+        post_config: Option<PostConfig>,
     ) -> SupraConfig<'a> {
         SupraConfig {
-            supra_subcommand,
+            command,
             output,
             pre_config,
             pan_config,
@@ -29,9 +29,18 @@ impl SupraConfig<'_> {
 }
 
 /// The types of subcommands.
-pub enum SupraSubcommand {
+pub enum SupraCommand<'a> {
+    Main,
     NewUserJournalFile,
-    NewProject,
+    NewProject(&'a str),
+}
+
+/// Output options
+#[derive(PartialEq, Eq, Debug)]
+pub enum Output {
+    StandardOut,
+    Markdown,
+    Docx,
 }
 
 /// Pre-processor configuration.
@@ -104,12 +113,4 @@ impl PostConfig {
             running_header,
         }
     }
-}
-
-/// Output options
-#[derive(PartialEq, Eq, Debug)]
-pub enum Output {
-    StandardOut,
-    Markdown,
-    Docx,
 }
