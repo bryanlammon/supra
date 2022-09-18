@@ -154,6 +154,9 @@ fn main() -> Result<(), String> {
                         .help("Required to overwrite existing Markdown files and Makefiles"),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("rmake").about("Replace the Makefile in the current directory"),
+        )
         .get_matches();
 
     // Setup the logger.
@@ -241,12 +244,14 @@ fn main() -> Result<(), String> {
 
             SupraCommand::NewProject(name, overwrite)
         }
+        Some(("rmake", _)) => SupraCommand::ReplaceMake,
         _ => SupraCommand::Main,
     };
 
     let config = match command {
         SupraCommand::NewUserJournalFile => SupraConfig::new(command, None, None, None, None),
         SupraCommand::NewProject(_, _) => SupraConfig::new(command, None, None, None, None),
+        SupraCommand::ReplaceMake => SupraConfig::new(command, None, None, None, None),
         SupraCommand::Main => {
             // Files
             let input = matches.value_of("input").unwrap();

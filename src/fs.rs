@@ -171,6 +171,19 @@ pub fn new_project(name: &str, overwrite: bool) {
     }
 }
 
+/// Replace the current directory's Makefile with the Supra Makefile.
+pub fn replace_make() {
+    eprintln!("{} Replacing Makefile", Color::Green.paint("INFO"));
+    if let Err(e) = fs::write("./Makefile", MAKEFILE_CONTENTS) {
+        eprintln!(
+            "{} Error creating {}: {}",
+            Color::Red.paint("ERRO"),
+            Color::Blue.paint("./Makefile"),
+            e
+        );
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

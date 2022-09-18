@@ -33,6 +33,7 @@ pub enum SupraCommand<'a> {
     Main,
     NewUserJournalFile,
     NewProject(&'a str, bool),
+    ReplaceMake,
 }
 
 /// Output options

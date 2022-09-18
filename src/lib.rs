@@ -22,8 +22,13 @@ pub fn supra(config: SupraConfig) -> Result<(), String> {
             return Ok(());
         }
         SupraCommand::NewProject(name, overwrite) => {
-            debug!(slog_scope::logger(), "Creating blank user-journal file");
+            debug!(slog_scope::logger(), "Creating new project");
             fs::new_project(name, overwrite);
+            return Ok(());
+        }
+        SupraCommand::ReplaceMake => {
+            debug!(slog_scope::logger(), "Replacing Makefile");
+            fs::replace_make();
             return Ok(());
         }
         SupraCommand::Main => (
