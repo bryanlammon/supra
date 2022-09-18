@@ -45,7 +45,7 @@ fn add_mark(mut doc: String, name: &str) -> Result<String, String> {
 }
 
 fn add_note(mut fns: String, note: String) -> Result<String, String> {
-    let fns_find = "<w:footnote w:id=\"20\">".to_string();
+    let fns_find = r#"<w:footnote w:id="[1-9]\d*">"#.to_string();
     let fns_replace = format!("<w:footnote w:id=\"1\"><w:p><w:pPr><w:pStyle w:val=\"FootnoteText\"/></w:pPr><w:r><w:rPr><w:rStyle w:val=\"FootnoteReference\" /></w:rPr><w:t>*</w:t></w:r><w:r><w:t xml:space=\"preserve\"> </w:t></w:r><w:r><w:t xml:space=\"preserve\">{}</w:t></w:r></w:p></w:footnote><w:footnote w:id=\"20\">", note);
 
     let re2 = Regex::new(&fns_find).unwrap();
