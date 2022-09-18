@@ -21,9 +21,9 @@ pub fn supra(config: SupraConfig) -> Result<(), String> {
             fs::new_user_journals_ron();
             return Ok(());
         }
-        SupraCommand::NewProject(name) => {
+        SupraCommand::NewProject(name, overwrite) => {
             debug!(slog_scope::logger(), "Creating blank user-journal file");
-            fs::new_project(name);
+            fs::new_project(name, overwrite);
             return Ok(());
         }
         SupraCommand::Main => (

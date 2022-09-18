@@ -32,7 +32,7 @@ impl SupraConfig<'_> {
 pub enum SupraCommand<'a> {
     Main,
     NewUserJournalFile,
-    NewProject(&'a str),
+    NewProject(&'a str, bool),
 }
 
 /// Output options

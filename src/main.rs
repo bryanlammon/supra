@@ -145,6 +145,13 @@ fn main() -> Result<(), String> {
                         .help("The name of your new project")
                         .required(true)
                         .min_values(1),
+                )
+                .arg(
+                    Arg::with_name("force_overwrite")
+                        .short('W')
+                        .long("force_overwrite")
+                        .takes_value(false)
+                        .help("Required to overwrite existing Markdown files and Makefiles"),
                 ),
         )
         .get_matches();
@@ -216,20 +223,30 @@ fn main() -> Result<(), String> {
                 process::exit(1);
             }
 
-            // TODO
-            // Need error correction for invalid characters in the name.
-            // # % & { } \ < > * ? / $ ! ' " : @ + ` | =
-
             // If there's only one value, use that
             let name = vals[0];
-            SupraCommand::NewProject(name)
+
+            // Error correction for invalid characters in the name.
+            // # % & { } \ < > * ? / $ ! ' " : @ + ` | =
+            if !valid_name(name) {
+                eprintln!(
+                    "{} Project name contains an invalid character\n     Do not use the following: {}",
+                    Color::Red.paint("ERRO"),
+                    Color::Red.paint("# % & { } \\ < > * ? / $ ! ' \" : @ + ` | =")
+                );
+                process::exit(1);
+            }
+
+            let overwrite = sub_matches.is_present("force_overwrite");
+
+            SupraCommand::NewProject(name, overwrite)
         }
         _ => SupraCommand::Main,
     };
 
     let config = match command {
         SupraCommand::NewUserJournalFile => SupraConfig::new(command, None, None, None, None),
-        SupraCommand::NewProject(_) => SupraConfig::new(command, None, None, None, None),
+        SupraCommand::NewProject(_, _) => SupraConfig::new(command, None, None, None, None),
         SupraCommand::Main => {
             // Files
             let input = matches.value_of("input").unwrap();
@@ -303,51 +320,68 @@ fn main() -> Result<(), String> {
         }
     };
 
-    // Files let input = matches.value_of("input").unwrap(); let library =
-    //matches.value_of("library").unwrap(); let output =
-    //matches.value_of("output"); let pandoc_reference =
-    //matches.value_of("pandoc_reference");
-
-    // Pre-processor options let offset =
-    //*matches.get_one::<usize>("offset").unwrap() as i32; let user_journals =
-    //if matches.is_present("user_journals") {
-    //    Some(matches.value_of("user_journals").unwrap()) } else { None }; let
-    //smallcaps = matches.is_present("smallcaps"); let force_overwrite =
-    //    matches.is_present("force_overwrite");
-
-    // Post-processing options let autocref = matches.is_present("autocref");
-    //let author_note = matches.is_present("author_note"); let tabbed_footnotes
-    //= matches.is_present("tabbed_footnotes"); let no_superscript =
-    //matches.is_present("no_superscript"); let running_header =
-    //matches.is_present("running_header");
-
-    // Deal with command-line errors.
-    //
-    // If the input and output strings are identical and force_overwrite has not
-    // been used, return an error and exit. if output.is_some() && input ==
-    //output.unwrap() && !force_overwrite { eprintln!("{} The input file ({})
-    //    and output file ({}) are the same,\n     but the force overwrite
-    //    option was not set.\n     If you want to overewrite the input file,
-    //use -W/--force_overwrite.", Color::Red.paint("ERRO"),
-    //Color::Blue.paint(input), Color::Blue.paint(output.unwrap()));
-    //process::exit(1); }
-
-    // Determine the output let output_option = match output { Some(f) => { if
-    //&f[f.len() - 3..] == ".md" { Output::Markdown } else if &f[f.len() - 5..]
-    //    == ".docx" { Output::Docx } else { eprintln!( "{} The output file must
-    //        have an .md or .docx extension. You used {}",
-    //            Color::Red.paint("ERRO"), Color::Blue.paint(f) );
-    //        process::exit(1); } } None => Output::StandardOut, };
-
-    // Create the configuration let pre_config = PreConfig::new(input, library,
-    //offset, user_journals, smallcaps); let pan_config = PanConfig::new(output,
-    //pandoc_reference); let post_config = PostConfig::new( autocref,
-    //author_note, tabbed_footnotes, no_superscript, running_header, ); let
-    //    config = SupraConfig::new( supra_sub, output_option, pre_config,
-    //    pan_config, post_config, );
-
     // Run the program.
     let _ = supra::supra(config);
 
     Ok(())
+}
+
+/// Tests a project name for valid characters.
+///
+/// New project names must consist only of characters that the file system is
+/// okay with. This returns a bool on whether the name is valid.
+fn valid_name(name: &str) -> bool {
+    for c in name.chars() {
+        if !valid_char(&c) {
+            return false;
+        }
+    }
+    true
+}
+
+/// Checks for invalid characters.
+///
+/// Takes a character and returns a bool of whether it's okay.
+fn valid_char(x: &char) -> bool {
+    !r#" #%&{}\<>*?/$!'":@+`|="#.chars().any(|y| y == *x)
+}
+
+#[cfg(test)]
+mod tets {
+    use super::*;
+
+    #[test]
+    fn all_valid() {
+        let input = "test";
+        assert!(valid_name(input));
+    }
+
+    #[test]
+    fn not_valid() {
+        let input = "test ";
+        assert!(!valid_name(input));
+    }
+
+    #[test]
+    fn good_chars() {
+        let good_chars = [
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
+            'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '1', '2', '3', '4', '5', '6', '7', '8',
+            '9', '0', '(', ')', '.',
+        ];
+        for c in good_chars {
+            assert!(valid_char(&c));
+        }
+    }
+
+    #[test]
+    fn bad_chars() {
+        let bad_chars = [
+            ' ', '#', '%', '&', '{', '}', '\\', '<', '>', '*', '?', '/', '$', '!', '\'', '"', ':',
+            '@', '+', '`', '|', '=',
+        ];
+        for c in bad_chars {
+            assert!(!valid_char(&c));
+        }
+    }
 }

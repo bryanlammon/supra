@@ -95,7 +95,7 @@ pub fn new_user_journals_ron() {
 }
 
 /// Create a new project.
-pub fn new_project(name: &str) {
+pub fn new_project(name: &str, overwrite: bool) {
     eprintln!(
         "{} Creating new project {}",
         Color::Green.paint("INFO"),
@@ -188,40 +188,80 @@ tk
 :::
 "#;
 
-    // Try to create each directory and file
-    if let Err(e) = fs::create_dir(root) {
+    // Try to create the project directory. If it exists, note a warning.
+    if Path::new(&root).exists() {
         eprintln!(
-            "{} Error creating root diectory: {}",
-            Color::Red.paint("ERRO"),
+            "{} Cannot create {}: Directory exists",
+            Color::Yellow.paint("WARN"),
+            Color::Blue.paint(&root)
+        );
+    } else if let Err(e) = fs::create_dir(&root) {
+        eprintln!(
+            "{} Error creating {}: {}",
+            Color::Yellow.paint("ERRO"),
+            Color::Red.paint(&root),
             e
         );
     };
-    if let Err(e) = fs::create_dir(src) {
+
+    // Try to create the Makefile. If it exists and overwrite is not set, note a warning.
+    if Path::new(&makefile).exists() && !overwrite {
         eprintln!(
-            "{} Error creating source diectory: {}",
-            Color::Red.paint("ERRO"),
-            e
-        );
-    }
-    if let Err(e) = fs::create_dir(build) {
+            "{} Cannot create {}: File exists (use -W to force overwrite)",
+            Color::Yellow.paint("WARN"),
+            Color::Blue.paint(&makefile)
+        )
+    } else if let Err(e) = fs::write(&makefile, makefile_contents) {
         eprintln!(
-            "{} Error creating build diectory: {}",
+            "{} Error creating {}: {}",
             Color::Red.paint("ERRO"),
+            Color::Blue.paint(&makefile),
             e
         );
     }
 
-    if let Err(e) = fs::write(makefile, makefile_contents) {
+    // Try to create the source directory. If it exists, note a warning.
+    if Path::new(&src).exists() {
         eprintln!(
-            "{} Error creating Makefile: {}",
+            "{} Cannot create {}: Directory exists",
+            Color::Yellow.paint("WARN"),
+            Color::Blue.paint(&src)
+        );
+    } else if let Err(e) = fs::create_dir(&src) {
+        eprintln!(
+            "{} Error creating {}: {}",
             Color::Red.paint("ERRO"),
+            Color::Blue.paint(&src),
             e
         );
     }
-    if let Err(e) = fs::write(md, md_contents) {
+
+    if Path::new(&md).exists() && !overwrite {
         eprintln!(
-            "{} Error creating Markdown file: {}",
+            "{} Cannot create {}: File exists (use -W to force overwrite)",
+            Color::Yellow.paint("WARN"),
+            Color::Blue.paint(&md)
+        )
+    } else if let Err(e) = fs::write(&md, md_contents) {
+        eprintln!(
+            "{} Error creating {}: {}",
             Color::Red.paint("ERRO"),
+            Color::Blue.paint(&md),
+            e
+        );
+    }
+
+    if Path::new(&build).exists() {
+        eprintln!(
+            "{} Cannot create {}: Directory exists",
+            Color::Yellow.paint("WARN"),
+            Color::Blue.paint(&build)
+        );
+    } else if let Err(e) = fs::create_dir(&build) {
+        eprintln!(
+            "{} Error creating {}: {}",
+            Color::Red.paint("ERRO"),
+            Color::Blue.paint(&build),
             e
         );
     }
