@@ -39,8 +39,8 @@ md_file := $(build_dir)$(current_dir).md
 docx_file := $(build_dir)$(current_dir).docx
 docx_file_cs :=$(build_dir)$(current_dir)-cs.docx
 
-docx_reference_book := ../_build-tools/supra-custom-reference-cormorant.docx
-docx_reference_cs := ../_build-tools/supra-custom-reference-cs.docx
+docx_reference_book := ../_build-tools/supra-reference-cormorant.docx
+docx_reference_cs := ../_build-tools/supra-reference-cs.docx
 supra_lib = ../_build-tools/my-library.json
 
 all: $(docx_file) $(docx_file_cs)
