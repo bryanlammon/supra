@@ -269,7 +269,7 @@ fn lex_fn(input: &str) -> Result<Vec<Token>, String> {
                 slog_scope::logger(),
                 "Pushing token type {:?} containing {:?}",
                 TokenType::CrossRef,
-                &input[mat.start() + 5..mat.end()],
+                &input[mat.start() + 6..mat.end()],
             );
             lex.push(Token::new(
                 TokenType::CrossRef,
