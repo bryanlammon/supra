@@ -31,7 +31,7 @@ Supra lets you write legal scholarship in Markdown.
 
 ## About
 
-Supra is a [Pandoc](https://pandoc.org) wrapper for legal scholarship.
+Supra is a [Pandoc](https://pandoc.org) wrapper for writing legal scholarship in Markdown.
 Pandoc is great for academic writing.
 But there are several aspects of legal scholarship that Pandoc doesn't do well, particularly the innumerable footnotes with oodles of cross-references—*i.e.*, *supra* notes.
 
@@ -82,7 +82,7 @@ But given the common style of legal scholarship, this break should not pose any 
 
 ```Markdown
 # A multiple-cite example
-Some text.^[*See* [@Smith2004]; [@Jones2004]; *see also* [Williams1990].]
+Some text.^[*See* [@Smith2004]; [@Jones2004]; *see also* [@Williams1990].]
 ```
 
 Supra can recognize pincites in various formats.
@@ -96,7 +96,7 @@ Some text.^[*See* [@Smith2004] 123.]
 Some more text.^[*See also* [@Jones2003] at 123 n.4.]
 
 Even more text.^[*See* [@Smith2004] 123; [@Williams1990] §
-\3944.]
+\ 3944.]
 
 # You can use "tk" for unknown page numbers (e.g.,
 # forthcoming articles)
@@ -106,12 +106,12 @@ I'm not sure what page I'm referring to yet.^[*But see*
 
 An "at" is optional, and Supra will ensure that citation types that require an "at" have one.
 
-Two notes about what Supra doesn't add:
+Two notes about what Supra doesn't add.
 First, Supra does not add signals like *see* or *but see*.
 You have to add those manually.
-Second, Supra will not insert *Id*s where appropriate.
+Second, Supra will not insert `*id*`s where appropriate.
 All citations after the first are in "*supra* note" format.
-So if you cite the same source in subsequent footnotes, you must manually add the *Id.*s.
+So if you cite the same source in subsequent footnotes, you must manually add the `*id.*`s.
 
 #### Internal Cross-References
 
@@ -156,7 +156,7 @@ Supra currently supports four source types:
 
 For books, book chapters, and consecutively paginated journal articles, Supra uses the expected CSL JSON fields.
 If you have multiple sources from the same author in your library, you should add a short title to each source for potential "*hereinafter*" use.
-For unpublished manuscripts that are forthcoming in a law review, you can add `volume` and `container-title` fields to produce a citation in "forthcoming" format, *e.g.,* June Smith, *An Article About Someting*, 10 Law J. (forthcoming 2021).
+For unpublished manuscripts that are forthcoming in a law review, you can add `volume` and `container-title` fields to produce a citation in "forthcoming" format, *e.g.,* June Smith, *An Article About Someting*, 10 Law J. (forthcoming 2023).
 In Zotero, you can enter those on separate lines in the "Extra" field:
 
 ```Markdown
@@ -185,8 +185,7 @@ supra input.md library.json | pandoc --from=markdown -o output.docx
 
 An optional third argument is the output file.
 That file must end with an `.md` or `.docx` extension.
-An `.md` will output in Markdown format.
-`.docx` will use Pandoc to output a Word document.
+An `.md` will output in Markdown format; `.docx` will run Pandoc to output a Word document.
 
 ```sh
 # Three-argument example with Markdown output
@@ -199,7 +198,7 @@ supra input.md library.json output.docx
 Finally, an optional fourth argument is the Pandoc [custom reference file](https://pandoc.org/MANUAL.html#option--reference-doc).
 Invoking this argument requires that the third argument (the output file) end with a `.docx` extension.
 If you output to Markdown, Pandoc will not run and the custom reference will be useless.
-And if you do not supply an output file at all—meaning that the custom reference file is your third argument—Supra will think that the custom reference file was the output.
+And if you do not supply an output file at all—meaning that the custom reference file is your third argument—Supra will think that the custom reference file is your desired output.
 
 ```sh
 # Using a custom reference
@@ -254,7 +253,7 @@ supra input.md library.json output.md -f 99
 
 I have a hard time imagining when a negative number would be useful.
 You should not try to manually add in an author/star/asterisk note—that requires way too much fiddling with Word.
-It's much easier to use the [`-a/--author`](#insert-author-note) option.
+It's much easier to use the [`-a/--author`](#insert-author-note) option discussed below.
 But Supra allows you to use a negative offset if you really want to.
 
 #### User Journal File
@@ -271,7 +270,7 @@ You can also supply your own collection of abbreviated journal names.
 The names must be in the form of a Supra user-journal file.
 You can create a blank user-journal file by running `supra uj`.
 This will create a file called `blank-user-journals.ron`, which you can rename to whatever you want.
-Open the file in any plain-text editor, and you will find instructions on how to add journals and a placeholder example.
+Open the file in any plain-text editor, and you will find instructions on how to add journals.
 
 To run Supra with a user-journal file, add the argument `-u` or `--user_journals`, follwed by the file name.
 
@@ -312,11 +311,11 @@ It's a good default option.
 `supra-reference-cormorant.docx` is my preference.
 It is styled a little differently and uses narrow margins for easy reading on a tablet.
 It also requires that you have the fonts Cormorant Garamond and Cormorant SC installed.
-You can download them [here](https://github.com/CatharsisFonts/Cormorant).
+You can download those [here](https://github.com/CatharsisFonts/Cormorant).
 
 ### Post-Processing Options
 
-Supra can also make some edits to the `.xml` markup in the `.docx` file that Pandoc produces.
+Supra can also make some edits to the XML markup in the `.docx` file that Pandoc produces.
 These can make the journal-editing stage of law review writing easier, and they can reduce (and maybe even eliminate) the time that you must spend in Microsoft Word.
 
 #### Field Cross-References
@@ -325,7 +324,7 @@ These can make the journal-editing stage of law review writing easier, and they 
 -c/--autocref
 ```
 
-Turns the footnote cross-references in the `.docx` file into Microsoft Word fields, which can then be easily updated.
+Turns footnote cross-references into Microsoft Word fields, which can then be easily updated.
 
 This is useful for the editing stages of legal scholarship.
 The addition and subtraction of footnotes that often happens during editing can require updating cross-referenced footnote numbers.
@@ -350,7 +349,7 @@ author_note: A note about the author.
 ---
 ```
 
-The post-processor will find the last word in the `author` field, add a star (*i.e.*, \*) footnote, and use the contents of `author_note` for that footnote's contents.
+The post-processor will add a star (*i.e.*, \*) footnote after the last word in the `author` field and use the contents of `author_note` for that footnote's contents.
 
 Note, this option requires only a single `author` entry and a single note.
 If there are multiple authors, they should all be entered as one author in the YAML metadata block for this option to work.
@@ -403,7 +402,7 @@ To use this option, you must add the necessary information to `year` and `runnin
 ```yaml
 ---
 title: The Article Title
-author: Author's Name
+author: Author Name
 year: 2022
 running_header: Title
 ---
@@ -460,7 +459,7 @@ new
 If you use this structure, you can create new research projects with Supra's `new` subcommand.
 You just type `supra new <name>`, with `<name>` being the name for your project.
 Supra then creates a directory with that name, the `src/` and `build/` subdirectories, and a placeholder `.md` file and `Makefile`.
-The `.md` file already has a YAML metadata block ready to fille out.
+The `.md` file already has a YAML metadata block ready to fill out.
 It also provides a space to write an abstract, using the abstract formatting in Supra's provided Pandoc custom references.
 
 ```sh
@@ -484,7 +483,7 @@ supra new article -W
 ### Makefile
 
 Even if you don't use the above approach, I still recommend running Supra via a [Makefile](https://www.gnu.org/software/make/manual/make.html).
-That way you can keep your reference library and custom Pandoc reference separate from any one project and use them library for all projects.
+That way you can keep your reference library and custom Pandoc reference separate from any one project and use them for all projects.
 
 #### Replace Makefile Subcommand
 
