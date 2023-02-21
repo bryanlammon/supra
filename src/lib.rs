@@ -1,98 +1,177 @@
-mod crossref;
-mod csljson;
-mod lexer;
-mod options;
-mod parser;
-mod render;
-mod sourcemap;
-mod userjournals;
+//! Contains the main Supra function. Determines which part of Supra to run.
 
-use slog::o;
+pub mod config;
+mod fs;
+mod pan;
+mod post;
+mod pre;
 
-/// The options for processing a file.
-pub struct SupraOptions {
-    offset: i32,
-    user_journals: Option<String>,
-    smallcaps: bool,
-}
+use crate::config::Output;
+use ansi_term::Color;
+use config::{SupraCommand, SupraConfig};
+use fs::load_file;
+use slog::{debug, error, o};
+use std::{path::Path, process};
 
-impl SupraOptions {
-    pub fn new(offset: i32, user_journals: Option<String>, smallcaps: bool) -> SupraOptions {
-        SupraOptions {
-            offset,
-            user_journals,
-            smallcaps,
+pub fn supra(config: SupraConfig) -> Result<(), String> {
+    // Check commands
+    match config.command {
+        SupraCommand::NewUserJournalFile => {
+            debug!(slog_scope::logger(), "Creating blank user-journal file");
+            fs::new_user_journals_ron();
+            return Ok(());
         }
+        SupraCommand::NewProject(name, overwrite) => {
+            debug!(slog_scope::logger(), "Creating new project");
+            fs::new_project(name, overwrite);
+            return Ok(());
+        }
+        SupraCommand::ReplaceMake => {
+            debug!(slog_scope::logger(), "Replacing Makefile");
+            fs::replace_make();
+            return Ok(());
+        }
+        SupraCommand::Main => (
+            // TODO
+        ),
     }
-}
 
-/// The main function.
-pub fn supra<'a>(
-    md_input: &'a str,
-    csl_input: &'a str,
-    options: SupraOptions,
-) -> Result<String, String> {
-    // Deserialize the CSL library file.
-    let csl_library = match slog_scope::scope(
-        &slog_scope::logger().new(o!("fn" => "de_csl_json()")),
-        || csljson::build_csl_lib(csl_input),
-    ) {
-        Ok(l) => l,
-        Err(e) => return Err(e),
-    };
+    eprintln!("{} Starting Supra...", Color::Green.paint("INFO"));
 
-    // Lex the markdown input
-    let tokens = match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "lexer()")), || {
-        lexer::lexer(md_input)
-    }) {
-        Ok(t) => t,
-        Err(e) => return Err(e),
-    };
+    // Create paths fort the input, library, etc.
+    let input = Path::new(config.pre_config.as_ref().unwrap().input);
+    let library = Path::new(config.pre_config.as_ref().unwrap().library);
+    let output = config.pan_config.as_ref().unwrap().output.map(Path::new);
+    let pandoc_reference = config
+        .pan_config
+        .as_ref()
+        .unwrap()
+        .pandoc_reference
+        .map(Path::new);
 
-    // Parse the tokens into the syntax tree
-    let tree = match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "parser()")), || {
-        parser::parser(&tokens, options.offset)
-    }) {
-        Ok(t) => t,
-        Err(e) => return Err(e),
-    };
-
-    // If there's a user journals list, deserialize it into the user journals map.
-    let user_journals;
-    if options.user_journals.is_some() {
-        match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "parser()")), || {
-            userjournals::build_user_journals(options.user_journals.unwrap())
+    // Load the input
+    let input =
+        match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "load_file()")), || {
+            load_file(input)
         }) {
-            Ok(u) => user_journals = Some(u),
-            Err(e) => return Err(e),
+            Ok(i) => i,
+            Err(e) => {
+                error!(slog_scope::logger(), "Markdown load error: {}", e);
+                eprintln!("{} Markdown load error: {}", Color::Red.paint("ERRO"), e);
+                process::exit(1);
+            }
+        };
+
+    // Load the CSL JSON library
+    let library =
+        match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "load_file()")), || {
+            load_file(library)
+        }) {
+            Ok(l) => l,
+            Err(e) => {
+                error!(slog_scope::logger(), "CSL JSON load error: {}", e);
+                eprintln!("{} CSL JSON load error: {}", Color::Red.paint("ERRO"), e);
+                process::exit(1);
+            }
+        };
+
+    // Load the user journals, if any
+    let user_journals = match config.pre_config.as_ref().unwrap().user_journals {
+        Some(u) => {
+            match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "load_file()")), || {
+                load_file(Path::new(&u))
+            }) {
+                Ok(j) => Some(j),
+                Err(e) => {
+                    error!(slog_scope::logger(), "User journals load error: {}", e);
+                    eprintln!(
+                        "{} User journals load error: {}",
+                        Color::Red.paint("ERRO"),
+                        e
+                    );
+                    process::exit(1);
+                }
+            }
         }
-    } else {
-        user_journals = None;
+        None => None,
+    };
+
+    // Run the pre-processor
+    eprintln!("{} Pre-processing...", Color::Green.paint("INFO"));
+
+    let pre = match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "pre()")), || {
+        pre::pre(
+            &input,
+            &library,
+            &user_journals,
+            config.pre_config.as_ref().unwrap().offset,
+            config.pre_config.as_ref().unwrap().smallcaps,
+        )
+    }) {
+        Ok(p) => p,
+        Err(e) => {
+            error!(slog_scope::logger(), "Pre-processing error: {}", e);
+            eprintln!("{} Pre-processing error: {}", Color::Red.paint("ERRO"), e);
+            process::exit(1);
+        }
+    };
+
+    // If no output or Markdown output was selected, output now
+    if config.output.as_ref().unwrap() == &Output::StandardOut {
+        println!("{}", pre);
+        return Ok(());
+    } else if config.output.as_ref().unwrap() == &Output::Markdown {
+        // This can safely unwrap because an output must have been provided for
+        // config.output to be set to Markdown
+        return fs::save_file(output.unwrap(), &pre);
     }
 
-    // Build the source_map
-    let mut source_map = slog_scope::scope(
-        &slog_scope::logger().new(o!("fn" => "build_source_map()")),
-        || sourcemap::build_source_map(&tree, csl_library, user_journals),
-    );
+    // Run Pandoc on the pre-processor output
+    eprintln!("{} Running Pandoc...", Color::Green.paint("INFO"));
 
-    // Create the crossref_map
-    let crossref_map = slog_scope::scope(
-        &slog_scope::logger().new(o!("fn" => "build_crossref_map()")),
-        || crossref::build_crossref_map(&tree),
-    );
+    // If running pandoc, there must be an output
+    let output = output.unwrap();
 
-    // Render the output
-    let mut output = slog_scope::scope(&slog_scope::logger().new(o!("fn" => "render()")), || {
-        render::render(&tree, &mut source_map, &crossref_map)
-    });
+    match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "pan()")), || {
+        pan::pan(&pre, output, pandoc_reference)
+    }) {
+        Ok(o) => o,
+        Err(e) => {
+            error!(slog_scope::logger(), "Pandoc error: {:?}", e);
+            eprintln!("{} Pandoc error: {:?}", Color::Red.paint("ERRO"), e);
+            process::exit(1);
+        }
+    };
 
-    // Optionally add True Small Caps
-    if options.smallcaps {
-        output = slog_scope::scope(&slog_scope::logger().new(o!("fn" => "smallcaps()")), || {
-            options::smallcaps(&output)
-        });
+    // If any post-processing options are true, run the post-processor on the
+    // Pandoc .docx output
+    if config.post_config.as_ref().unwrap().autocref
+        || config.post_config.as_ref().unwrap().author_note
+        || config.post_config.as_ref().unwrap().tabbed_footnotes
+        || config.post_config.as_ref().unwrap().no_superscript
+        || config.post_config.as_ref().unwrap().running_header
+    {
+        eprintln!("{} Post-processing...", Color::Green.paint("INFO"));
+        match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "post()")), || {
+            post::post(
+                &input,
+                output,
+                config.post_config.as_ref().unwrap().autocref,
+                config.post_config.as_ref().unwrap().author_note,
+                config.post_config.as_ref().unwrap().tabbed_footnotes,
+                config.post_config.as_ref().unwrap().no_superscript,
+                config.post_config.as_ref().unwrap().running_header,
+            )
+        }) {
+            Ok(p) => p,
+            Err(e) => {
+                error!(slog_scope::logger(), "Post-processing error: {}", e);
+                eprintln!("{} Post-processing error: {}", Color::Red.paint("ERRO"), e);
+                process::exit(1);
+            }
+        };
     }
 
-    Ok(output)
+    eprintln!("{} Done", Color::Green.paint("INFO"));
+    Ok(())
 }

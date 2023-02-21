@@ -1,7 +1,7 @@
 //! This module contains tools for creating citations.
 
 use super::{journalnames, replacements};
-use crate::{csljson::NameVariable, userjournals::UserJournals};
+use crate::pre::{csljson::NameVariable, userjournals::UserJournals};
 use ansi_term::Color;
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -252,6 +252,12 @@ pub fn build_short_journal(long_journal: &str, user_journals: &Option<UserJourna
         warn!(
             slog_scope::logger(),
             "No short journal name found for {}; using {}",
+            Color::Blue.paint(long_journal),
+            Color::Blue.paint(&short_journal)
+        );
+        eprintln!(
+            "  {} No short journal name found for {}; using {}",
+            Color::Yellow.paint("WARN"),
             Color::Blue.paint(long_journal),
             Color::Blue.paint(&short_journal)
         );

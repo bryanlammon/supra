@@ -1,77 +1,118 @@
+//! `main.rs` contains the command-line interface for supra. It collects the
+//! values and options, sets up the logger, assembles the configuration, and
+//! passes everything to the main function.
+
 #[macro_use]
 extern crate slog;
 
-mod userjournals;
-
 use ansi_term::Color;
-use clap::{crate_version, App, Arg, SubCommand};
+use clap::{crate_version, value_parser, App, Arg, SubCommand};
 use slog::{debug, Drain, Level};
-use std::{fs, fs::OpenOptions, path::Path, process, sync::Mutex};
+use std::{fs::OpenOptions, process, sync::Mutex};
+use supra::config::{Output, PanConfig, PostConfig, PreConfig, SupraCommand, SupraConfig};
 
-fn main() {
-    // Get the command-line arguments and flags
+fn main() -> Result<(), String> {
+    // Get the command-line arguments and options
     let matches = App::new("supra")
         .version(crate_version!())
         .author("Bryan Lammon")
-        .about("A Pandoc preprocessor for legal scholarship")
+        .about("A Pandoc wrapper for legal scholarship")
+        .subcommand_negates_reqs(true)
         .arg(
             Arg::with_name("input")
-                .short("i")
-                .long("input")
                 .value_name("INPUT FILE")
                 .help("The Pandoc markdown file to process")
-                .index(1),
+                .index(1)
+                .required(true),
         )
         .arg(
             Arg::with_name("library")
-                .short("l")
-                .long("library")
                 .value_name("LIBRARY FILE")
                 .help("The reference library file in CSL JSON format")
-                .index(2),
+                .index(2)
+                .required(true),
         )
         .arg(
             Arg::with_name("output")
-                .short("o")
-                .long("output")
                 .value_name("OUTPUT FILE")
-                .help("Optional output file (blank outputs to terminal)")
-                .index(3),
+                .help("The .md or .docx output (blank oputputs to terminal)")
+                .index(3)
+                .required(false),
+        )
+        .arg(
+            Arg::with_name("pandoc_reference")
+                .value_name("REFERENCE FILE")
+                .help("The Pandoc custom reference file")
+                .index(4)
+                .required(false),
+        )
+        .arg(
+            Arg::with_name("smallcaps")
+                .short('s')
+                .long("smallcaps")
+                .takes_value(false)
+                .help("Applies a Word style called \"Small caps\" to all bolded text"),
         )
         .arg(
             Arg::with_name("offset")
-                .short("f")
+                .short('o')
                 .long("offset")
                 .value_name("NUMBER")
                 .help("The offset for counting footntes")
                 .default_value("0")
                 .allow_hyphen_values(true)
-                .validator(is_number),
+                .value_parser(value_parser!(usize)),
         )
         .arg(
-            Arg::with_name("user journals")
-                .short("u")
+            Arg::with_name("user_journals")
+                .short('u')
                 .long("user_journals")
                 .value_name("JOURNAL FILE")
                 .help("A RON file containing user-provided short-journal names"),
         )
         .arg(
-            Arg::with_name("force overwrite")
-                .short("W")
+            Arg::with_name("force_overwrite")
+                .short('W')
                 .long("force_overwrite")
                 .takes_value(false)
                 .help("Required to overwrite the input file with the output"),
         )
         .arg(
-            Arg::with_name("smallcaps")
-                .short("s")
-                .long("smallcaps")
+            Arg::with_name("autocref")
+                .short('c')
+                .long("autocref")
                 .takes_value(false)
-                .help("Applies a Word style called \"True small caps\" to all bolded text"),
+                .help("Turns cross-references in footnotes into Word fields"),
+        )
+        .arg(
+            Arg::with_name("author_note")
+                .short('a')
+                .long("author")
+                .help("Add an author footnote (requires .ron file with contents)"),
+        )
+        .arg(
+            Arg::with_name("tabbed_footnotes")
+                .short('t')
+                .long("tabs")
+                .help("Replace the space after footnote numbers with a tab"),
+        )
+        .arg(
+            Arg::with_name("no_superscript")
+                .short('n')
+                .long("no_superscript")
+                .help("Make footnotes non-superscript in the footnotes"),
+        )
+        .arg(
+            Arg::with_name("running_header")
+                .short('r')
+                .long("header")
+                .help(
+                    "Add a year and running title to the header (requires .ron file with contents)",
+                ),
         )
         .arg(
             Arg::with_name("debug")
-                .short("d")
+                .short('d')
                 .long("debug")
                 .takes_value(false)
                 .help("Outputs debug log to supra-log.json")
@@ -80,22 +121,49 @@ fn main() {
         )
         .arg(
             Arg::with_name("verbose")
-                .short("v")
+                .short('v')
                 .long("verbose")
                 .value_name("NUMBER")
                 .help("Verbosity level between 0 and 3")
                 .hidden_short_help(true)
                 .hidden_long_help(true)
-                .default_value("2"),
+                .default_value("1"),
         )
-        .subcommand(SubCommand::with_name("uj").about("For creating a blank user-journals file"))
+        .subcommand(SubCommand::with_name("uj").about("Create a blank user-journals file"))
+        .subcommand(
+            SubCommand::with_name("new")
+                .about("Create a new project")
+                .arg(
+                    // Although this takes only one value, allowing multiple
+                    // values is useful for error handling. That way if the user
+                    // provides a name with whitespaces, a custom error tells
+                    // the user to not use whitespaces. (The clap error treats
+                    // the words after the first word as arguments, which it
+                    // wasn't expecting.)
+                    Arg::with_name("name")
+                        .value_name("NAME")
+                        .help("The name of your new project")
+                        .required(true)
+                        .min_values(1),
+                )
+                .arg(
+                    Arg::with_name("force_overwrite")
+                        .short('W')
+                        .long("force_overwrite")
+                        .takes_value(false)
+                        .help("Required to overwrite existing Markdown files and Makefiles"),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("rmake").about("Replace the Makefile in the current directory"),
+        )
         .get_matches();
 
-    // Setup the terminal logger.
+    // Setup the logger.
     //
-    // First determine the log level for debug builds. Then setup the terminal
-    // logger. Finally, if the debug flag is set, setup the file longer
-    // alongside the terminal logger.
+    // If the debug flag is set, the log is output to a file `supra-log.json`.
+    // Otherwise, all logging goes to the terminal.
+    let debug = matches.is_present("debug");
     let min_log_level = match matches.value_of("verbose").unwrap() {
         "0" => Level::Critical,
         "1" => Level::Error,
@@ -105,13 +173,13 @@ fn main() {
         "5" => Level::Trace,
         _ => Level::Info,
     };
-    let debug = matches.is_present("debug");
 
     let term_decorator = slog_term::TermDecorator::new().build();
     let term_drain = slog_term::CompactFormat::new(term_decorator).build().fuse();
     let term_drain = term_drain.filter_level(min_log_level).fuse();
 
     let _guard: slog_scope::GlobalLoggerGuard = if debug {
+        // Setup the file AND terminal loggers
         let log_file = OpenOptions::new()
             .create(true)
             .write(true)
@@ -130,6 +198,7 @@ fn main() {
         );
         slog_scope::set_global_logger(dual_logger)
     } else {
+        // Setup just the terminal logger
         let term_logger = slog::Logger::root(
             Mutex::new(term_drain).fuse(),
             o!("version" => crate_version!()),
@@ -139,189 +208,185 @@ fn main() {
 
     debug!(slog_scope::logger(), "Logger setup");
 
-    // Subcommands
-    if let Some("uj") = matches.subcommand_name() {
-        debug!(slog_scope::logger(), "Creating blank user-journal file");
-        userjournals::new_user_journals_ron();
-        process::exit(0);
-    }
+    // Determine which command to run
+    let command = match matches.subcommand() {
+        Some(("uj", _)) => SupraCommand::NewUserJournalFile,
+        Some(("new", sub_matches)) => {
+            // Get the name of the new project
+            let vals: Vec<_> = sub_matches.values_of("name").unwrap().collect();
 
-    // Setup the configuration variables.
-    let input_file = Path::new(matches.value_of("input").unwrap());
-    let library_file = Path::new(matches.value_of("library").unwrap());
-    let output_option = matches.value_of("output").map(Path::new);
-    let offset = matches.value_of("offset").unwrap().parse::<i32>().unwrap();
-    let user_journals_file = if matches.is_present("user journals") {
-        Some(Path::new(matches.value_of("user journals").unwrap()))
-    } else {
-        None
-    };
-    let smallcaps = matches.is_present("smallcaps");
-    let force_overwrite = matches.is_present("force overwrite");
-
-    // Deal with command-line errors.
-    //
-    // If the input and output strings are identical and force_overwrite has not
-    // been used, return an error and exit.
-    if output_option.is_some() && input_file == output_option.unwrap() && !force_overwrite {
-        eprintln!("The input file\n\t({})\n and output file\n\t({})\nare identical, but the force overwrite flag (-W/--force_overwrite) was not set.\nIf you want to overewrite the input file, use -W/--force_overwrite", Color::Blue.paint(input_file.to_string_lossy()), Color::Blue.paint(output_option.unwrap().to_string_lossy()));
-        process::exit(1);
-    }
-
-    // Load the inputs.
-    let input =
-        match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "load_file()")), || {
-            load_file(input_file)
-        }) {
-            Ok(i) => i,
-            Err(e) => {
-                error!(slog_scope::logger(), "Markdown load error: {}", e);
-                eprintln!("Markdown load error: {}", e);
+            // If there's more than one value, return an error. This is better
+            // than clap's error, because it doesn't explain that the project
+            // name must be a single word with no whitespaces.
+            if vals.len() > 1 {
+                eprintln!(
+                    "{} Project names must be a single word with no whitespaces",
+                    Color::Red.paint("ERRO")
+                );
                 process::exit(1);
             }
-        };
 
-    // Load the CSL JSON library
-    let library =
-        match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "load_file()")), || {
-            load_file(library_file)
-        }) {
-            Ok(l) => l,
-            Err(e) => {
-                error!(slog_scope::logger(), "CSL JSON load error: {}", e);
-                eprintln!("CSL JSON load error: {}", e);
+            // If there's only one value, use that
+            let name = vals[0];
+
+            // Error correction for invalid characters in the name.
+            // # % & { } \ < > * ? / $ ! ' " : @ + ` | =
+            if !valid_name(name) {
+                eprintln!(
+                    "{} Project name contains an invalid character\n     Do not use the following: {}",
+                    Color::Red.paint("ERRO"),
+                    Color::Red.paint("# % & { } \\ < > * ? / $ ! ' \" : @ + ` | =")
+                );
                 process::exit(1);
             }
-        };
 
-    let user_journals = match user_journals_file {
-        Some(u) => {
-            match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "load_file()")), || {
-                load_file(u)
-            }) {
-                Ok(j) => Some(j),
-                Err(e) => {
-                    error!(slog_scope::logger(), "User journals load error: {}", e);
-                    eprintln!("User journals load error: {}", e);
-                    process::exit(1);
-                }
-            }
+            let overwrite = sub_matches.is_present("force_overwrite");
+
+            SupraCommand::NewProject(name, overwrite)
         }
-        None => None,
+        Some(("rmake", _)) => SupraCommand::ReplaceMake,
+        _ => SupraCommand::Main,
     };
 
-    // Set the options
-    let options = supra::SupraOptions::new(offset, user_journals, smallcaps);
+    let config = match command {
+        SupraCommand::NewUserJournalFile => SupraConfig::new(command, None, None, None, None),
+        SupraCommand::NewProject(_, _) => SupraConfig::new(command, None, None, None, None),
+        SupraCommand::ReplaceMake => SupraConfig::new(command, None, None, None, None),
+        SupraCommand::Main => {
+            // Files
+            let input = matches.value_of("input").unwrap();
+            let library = matches.value_of("library").unwrap();
+            let output = matches.value_of("output");
+            let pandoc_reference = matches.value_of("pandoc_reference");
+
+            // Pre-processor options
+            let offset = *matches.get_one::<usize>("offset").unwrap() as i32;
+            let user_journals = if matches.is_present("user_journals") {
+                Some(matches.value_of("user_journals").unwrap())
+            } else {
+                None
+            };
+            let smallcaps = matches.is_present("smallcaps");
+            let force_overwrite = matches.is_present("force_overwrite");
+
+            // Post-processing options
+            let autocref = matches.is_present("autocref");
+            let author_note = matches.is_present("author_note");
+            let tabbed_footnotes = matches.is_present("tabbed_footnotes");
+            let no_superscript = matches.is_present("no_superscript");
+            let running_header = matches.is_present("running_header");
+
+            // Deal with command-line errors.
+            //
+            // If the input and output strings are identical and force_overwrite
+            // has not been used, return an error and exit.
+            if output.is_some() && input == output.unwrap() && !force_overwrite {
+                eprintln!("{} The input file ({}) and output file ({}) are the same,\n     but the force overwrite option was not set.\n     If you want to overewrite the input file, use -W/--force_overwrite.", Color::Red.paint("ERRO"), Color::Blue.paint(input), Color::Blue.paint(output.unwrap()));
+                process::exit(1);
+            }
+
+            // Determine the output
+            let output_option = match output {
+                Some(f) => {
+                    if &f[f.len() - 3..] == ".md" {
+                        Output::Markdown
+                    } else if &f[f.len() - 5..] == ".docx" {
+                        Output::Docx
+                    } else {
+                        eprintln!(
+                            "{} The output file must have an .md or .docx extension. You used {}",
+                            Color::Red.paint("ERRO"),
+                            Color::Blue.paint(f)
+                        );
+                        process::exit(1);
+                    }
+                }
+                None => Output::StandardOut,
+            };
+
+            // Create the configuration
+            let pre_config = PreConfig::new(input, library, offset, user_journals, smallcaps);
+            let pan_config = PanConfig::new(output, pandoc_reference);
+            let post_config = PostConfig::new(
+                autocref,
+                author_note,
+                tabbed_footnotes,
+                no_superscript,
+                running_header,
+            );
+
+            SupraConfig::new(
+                command,
+                Some(output_option),
+                Some(pre_config),
+                Some(pan_config),
+                Some(post_config),
+            )
+        }
+    };
 
     // Run the program.
-    let output = match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "supra()")), || {
-        supra::supra(&input, &library, options)
-    }) {
-        Ok(o) => o,
-        Err(e) => {
-            error!(slog_scope::logger(), "Application error: {}", e);
-            drop(_guard);
-            eprintln!("Application error: {}", e);
-            process::exit(1);
-        }
-    };
+    let _ = supra::supra(config);
 
-    // Output the result
-    slog_scope::scope(
-        &slog_scope::logger().new(o!("fn" => "output_result()")),
-        || output_result(output_option, &output),
-    );
+    Ok(())
 }
 
-/// Ensure that the command-line value is an integer.
-fn is_number(f: String) -> Result<(), String> {
-    if f.parse::<i32>().is_ok() {
-        return Ok(());
-    }
-    Err(String::from("The offset must be an integer"))
-}
-
-/// Load the a file into a string.
+/// Tests a project name for valid characters.
 ///
-/// This function is used to load both the markdown and CSL JSON files into
-/// strings, which can then be passed to the main function.
-fn load_file(path: &Path) -> Result<String, String> {
-    debug!(
-        slog_scope::logger(),
-        "Loading file {}...",
-        path.to_string_lossy()
-    );
-
-    match fs::read_to_string(path) {
-        Ok(r) => {
-            debug!(
-                slog_scope::logger(),
-                "File {} loaded.",
-                path.to_string_lossy()
-            );
-            Ok(r)
-        }
-        Err(e) => {
-            let err_msg = format!("error reading the file {}—{}", path.to_string_lossy(), e);
-            Err(err_msg)
+/// New project names must consist only of characters that the file system is
+/// okay with. This returns a bool on whether the name is valid.
+fn valid_name(name: &str) -> bool {
+    for c in name.chars() {
+        if !valid_char(&c) {
+            return false;
         }
     }
+    true
 }
 
-/// Output the result to a file or the terminal.
-fn output_result(output_option: Option<&Path>, output: &str) {
-    debug!(slog_scope::logger(), "Outputting results...");
-
-    match output_option {
-        Some(f) => {
-            fs::write(f, output).expect("Unable to write file");
-        }
-        None => {
-            println!("{}", output);
-        }
-    }
-
-    debug!(slog_scope::logger(), "Results output.");
+/// Checks for invalid characters.
+///
+/// Takes a character and returns a bool of whether it's okay.
+fn valid_char(x: &char) -> bool {
+    !r#" #%&{}\<>*?/$!'":@+`|="#.chars().any(|y| y == *x)
 }
 
 #[cfg(test)]
-mod tests {
+mod tets {
     use super::*;
 
-    mod test_validators {
-        use super::*;
+    #[test]
+    fn all_valid() {
+        let input = "test";
+        assert!(valid_name(input));
+    }
 
-        #[test]
-        fn numerical_offset() {
-            let offset = is_number("-1".to_string());
-            assert!(offset.is_ok());
-        }
+    #[test]
+    fn not_valid() {
+        let input = "test ";
+        assert!(!valid_name(input));
+    }
 
-        #[test]
-        fn non_numerical_offset() {
-            let offset = is_number("banana".to_string());
-            assert!(offset.is_err());
+    #[test]
+    fn good_chars() {
+        let good_chars = [
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
+            'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '1', '2', '3', '4', '5', '6', '7', '8',
+            '9', '0', '(', ')', '.',
+        ];
+        for c in good_chars {
+            assert!(valid_char(&c));
         }
     }
 
-    mod test_load_file {
-        use super::*;
-
-        #[test]
-        fn test_load() {
-            let file = "./tests/test-input.md";
-            let load_result = load_file(Path::new(file));
-            assert!(load_result.is_ok());
-            assert!(load_result.unwrap().contains("Supra Test Document"));
-        }
-
-        #[test]
-        fn fail_load() {
-            let file = "./tests/does-not-exist.md";
-            let load_result = load_file(Path::new(file));
-            assert!(load_result
-                .unwrap_err()
-                .contains("No such file or directory"));
+    #[test]
+    fn bad_chars() {
+        let bad_chars = [
+            ' ', '#', '%', '&', '{', '}', '\\', '<', '>', '*', '?', '/', '$', '!', '\'', '"', ':',
+            '@', '+', '`', '|', '=',
+        ];
+        for c in bad_chars {
+            assert!(!valid_char(&c));
         }
     }
 }

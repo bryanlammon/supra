@@ -1,7 +1,7 @@
 //! This module contains the Supra parser. It converts collection of tokens into
 //! the Supra syntax tree.
 
-use crate::lexer::{Token, TokenType};
+use crate::pre::lexer::{Token, TokenType};
 use slog::{debug, o, trace};
 
 /// The types of branches on the syntax tree.
@@ -55,7 +55,7 @@ pub struct Footnote<'a> {
     pub contents: Vec<Branch<'a>>,
 }
 
-impl<'a> Footnote<'_> {
+impl Footnote<'_> {
     fn new<'b>(number: i32, id: Option<&'b str>, contents: Vec<Branch<'b>>) -> Footnote<'b> {
         Footnote {
             number,
@@ -74,7 +74,7 @@ pub struct Citation<'a> {
     pub punctuation: &'a str,
 }
 
-impl<'a> Citation<'_> {
+impl Citation<'_> {
     fn new<'b>(
         reference: &'b str,
         pincite: Option<&'b str>,
@@ -249,7 +249,7 @@ fn cite_parser<'a>(tokens: &[Token<'a>]) -> Result<Citation<'a>, String> {
 fn pin_parser(input: &str) -> Option<&str> {
     if input.trim().is_empty() {
         None
-    } else if input.find("at") == None {
+    } else if !input.contains("at") {
         Some(input.trim())
     } else {
         let at_start = input.find("at").unwrap();

@@ -1,6 +1,6 @@
 //! This module contains functionality for rendering the output.
 
-use crate::{parser::Branch, sourcemap::SourceMap};
+use crate::pre::{parser::Branch, sourcemap::SourceMap};
 use slog::{debug, trace};
 use std::collections::HashMap;
 

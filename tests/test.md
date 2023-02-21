@@ -1,6 +1,9 @@
 ---
 title: Supra Test Document
 author: Test Author
+author_note: Author footnote contents.
+year: 2022
+running_header: Test Doc
 ...
 
 # First Citations
