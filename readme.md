@@ -8,7 +8,7 @@ Supra lets you write legal scholarship in Markdown.
     - [Citations](#citations)
     - [Internal Cross-References](#internal-cross-references)
   - [Source Library](#source-library)
-- [Usage & Options](#usage--options)
+- [Usage \& Options](#usage--options)
   - [Basic Usage](#basic-usage)
   - [Pre-Processor Options](#pre-processor-options)
     - [Small Caps](#small-caps)
@@ -72,8 +72,7 @@ Note, a document written with reference-style footnotes can be converted to inli
 Some text.^[*See* [@Smith2004].]
 
 # Another simple example
-Some more text.^[For an in-depth discussion of the *Johnson*
-case, see [@Jones2003].]
+Some more text.^[For an in-depth discussion of the *Johnson* case, see [@Jones2003].]
 ```
 
 Each citation must be in its own pair of brackets.
@@ -95,13 +94,10 @@ Some text.^[*See* [@Smith2004] 123.]
 
 Some more text.^[*See also* [@Jones2003] at 123 n.4.]
 
-Even more text.^[*See* [@Smith2004] 123; [@Williams1990] §
-\ 3944.]
+Even more text.^[*See* [@Smith2004] 123; [@Williams1990] § \ 3944.]
 
-# You can use "tk" for unknown page numbers (e.g.,
-# forthcoming articles)
-I'm not sure what page I'm referring to yet.^[*But see*
-[@Johnson2021] at tk.]
+# You can use "tk" for unknown page numbers (e.g., forthcoming articles)
+I'm not sure what page I'm referring to yet.^[*But see* [@Johnson2021] at tk.]
 ```
 
 An "at" is optional, and Supra will ensure that citation types that require an "at" have one.
@@ -116,21 +112,18 @@ So if you cite the same source in subsequent footnotes, you must manually add th
 #### Internal Cross-References
 
 Supra can also add cross-references to other footnotes.
-This requires adding an ID to the referred-to footnote, which is a unique string that begins with a `?`, is surrounded by brackets, and is the first thing in the footnote.
+This requires adding an ID to the referred-to footnote, which is a unique string that (1) begins with a `?`, (2) is surrounded by brackets, and (3) is the first thing in the footnote.
 The footnote can then be referred to with that ID.
 
 ```Markdown
 # A Footnote with a Cross-References
-Some text.^[[?id1] This footnote has an ID. For another
-footnote, see *infra* note [?id2].]
+Some text.^[[?id1] This footnote has an ID. For another footnote, see *infra* note [?id2].]
 
 # Referring Back to a Footnote
-Some more text.^[[?id2] For another footnote, see *supra*
-note [?id1].]
+Some more text.^[[?id2] For another footnote, see *supra* note [?id1].]
 
 # Referring Back to a Range of Footnotes
-Even more text.^[*See* *supra* notes [?id1]–[?id2] and
-accompanying text.]
+Even more text.^[*See* *supra* notes [?id1]–[?id2] and accompanying text.]
 ```
 
 Supra will not add *supra*, *infra*, or the word "note" to these cross-references.
@@ -215,7 +208,7 @@ The pre-processor has a few additional options.
 -s/--smallcaps
 ```
 
-A Pandoc lua filter can set certain text to small caps (e.g., [bolded text to small caps](https://pandoc.org/lua-filters.html)).
+A Pandoc Lua filter can set certain text to small caps (e.g., [bolded text to small caps](https://pandoc.org/lua-filters.html)).
 If outputting to a docx file, however, the text is not [true small caps](https://en.wikipedia.org/wiki/Small_caps#Word_processors).
 
 Supra includes an option to set bolded text to a Word style called "Small Caps."
@@ -239,8 +232,8 @@ The first footnote will be treated as the provided offset + 1.
 So, for example, to treat the second footnote in the document as footnote 1, you would follow the argument with `-1`
 
 ```sh
-# Skip the first footnote; all references to the second
-# footnote in the document will call it note "1"
+# Skip the first footnote; all references to the second footnote in the
+# document will call it note "1"
 supra input.md library.json output.md -f -1
 ```
 
@@ -338,7 +331,7 @@ With fields, you simply need to tell Word to [update all fields](https://support
 
 Adds an author note (sometimes called a star footnote or asterisk footnote) using metadata from the Pandoc file.
 
-Given that author notes normally aren't numbered, I recommend against adding them directly in your Pandoc document.
+Given that author notes normally aren't numbered, I recommend not adding them directly in your Pandoc document.
 You can instead add an `author_note` field to the [YAML metadata block](https://pandoc.org/MANUAL.html#extension-yaml_metadata_block) in your Pandoc document:
 
 ```yaml
@@ -469,14 +462,13 @@ supra new article
 
 Three notes about the `new` subcommand.
 First, the name cannot contain any spaces or characters that shouldn't go in directory or file names.
-Second, the default Supra Makefile expects both of Supra's custom references to be in your `_build_tools/` folder.
+Second, the default Supra Makefile expects both of Supra's custom references to be in your `_build-tools/` folder.
 If one or both is missing, you'll need to edit the Makefile.
 And third, by default, Supra will not overwrite your Markdown file or Makefile.
 If you *really* want to overwrite the existing files, add the option `-W` or `--force_overwrite`.
 
 ```sh
-# Overwrite the Markdown file and Makefile in the article
-# folder
+# Overwrite the Markdown file and Makefile in the article folder
 supra new article -W
 ```
 
