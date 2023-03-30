@@ -62,7 +62,7 @@ pub fn pre<'a>(
     // Build the source_map
     let mut source_map = slog_scope::scope(
         &slog_scope::logger().new(o!("fn" => "build_source_map()")),
-        || sourcemap::build_source_map(&tree, csl_library, user_journals),
+        || sourcemap::build_source_map(&tree, &csl_library, &user_journals),
     );
 
     // Create the crossref_map

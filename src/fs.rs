@@ -193,7 +193,7 @@ mod tests {
 
         #[test]
         fn test_load() {
-            let file = "./tests/test.md";
+            let file = "./tests/test-input.md";
             let load_result = load_file(Path::new(file));
             assert!(load_result.is_ok());
             assert!(load_result.unwrap().contains("Supra Test Document"));

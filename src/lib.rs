@@ -1,7 +1,7 @@
 //! Contains the main Supra function. Determines which part of Supra to run.
 
 pub mod config;
-mod fs;
+pub mod fs;
 mod pan;
 mod post;
 mod pre;
