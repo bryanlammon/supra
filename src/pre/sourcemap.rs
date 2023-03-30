@@ -79,7 +79,7 @@ pub fn build_source_map<'a>(
     source_map
 }
 
-/// Begin the source map, which contains only partial short cites
+/// Begin the source map, which contains only partial short cites.
 fn start_source_map<'a>(
     csl_library: Vec<CSLSource>,
     tree: &'a [Branch],
