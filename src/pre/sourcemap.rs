@@ -12,6 +12,20 @@ use std::collections::HashMap;
 pub type SourceMap<'a> = HashMap<&'a str, Source<'a>>;
 
 /// A source cited in the input document and built from the CSL JSON library.
+///
+/// The fields are used as follows:
+///
+/// * `csl_source`: A reference to the [`CSLSource`] data for the `Source`, which is used for creating the long and short cites.
+/// * `id`: The ID for the `Source`.
+/// * `source_type`: The type of source, stored as a [`SourceType`] enum variant.
+/// * `first_footnote`: The first footnote in which a source is cited. Used for creating cross references.
+/// * `all_footnotes`: A collection of all of the footnotes in which the source is cited.
+/// * `long_cite_no_pin`: A [`String`] of the source's long cite, with no pincite.
+/// * `long_cite_with_pin`: A tuple of [`String`]s that are used for long cites with pincites.
+/// * `short_author`: The author used for short cites. This is used do determine the need for hereinafters when building the source map.
+/// * `short_cite`: The short form of the citation. TODO This should be broken out into the with and without pin varieties to facilitate cases.
+/// * `cited`: Whether the `Source` has been cited. Used to determine whether a short form can be used. TODO This could be changed to `last_cited` and used for determining whether `Id.` can be used instead of a short cite.
+/// * `hereinafter`: Whether the `Source` requires a hereinafter.
 #[derive(Debug)]
 pub struct Source<'a> {
     pub csl_source: &'a CSLSource,
@@ -33,6 +47,7 @@ impl Source<'_> {
         self.long_cite_no_pin.as_ref().unwrap().to_string()
     }
 
+    /// Output a long cite with a pin.
     pub fn long_cite_w_pin(&self, pin: &str) -> String {
         let mut cite = self.long_cite_w_pin.as_ref().unwrap().0.to_owned();
         if self.source_type == SourceType::Book {
@@ -51,6 +66,7 @@ impl Source<'_> {
         cite
     }
 
+    /// Output a short cite.
     pub fn short_cite(&self) -> String {
         self.short_cite.as_ref().unwrap().to_string()
     }
@@ -70,7 +86,7 @@ pub enum SourceType {
 ///
 /// This function creates the [`SourceMap`], which is a hash map with ids as
 /// keys and [`Source`]s as values. This [`SourceMap`] is then used in replacing
-/// the citations in the Pandoc markdown document.
+/// the citations in the document.
 ///
 /// Creating the [`SourceMap`] requires four steps. It first creates the basic
 /// information for each source. But full cites---short or long---cannot be
@@ -93,18 +109,17 @@ pub fn build_source_map<'a>(
         &slog_scope::logger().new(o!("fn" => "start_source_map()")),
         || start_source_map(csl_library, tree),
     );
-    //let mut source_map = start_source_map(&csl_library, tree, &user_journals);
 
     // Determine the need for hereinafters
-    source_map = slog_scope::scope(
+    slog_scope::scope(
         &slog_scope::logger().new(o!("fn" => "check_hereinafters()")),
-        || check_hereinafters(source_map),
+        || check_hereinafters(&mut source_map),
     );
 
     // Add the long cites for every source.
-    source_map = slog_scope::scope(
+    slog_scope::scope(
         &slog_scope::logger().new(o!("fn" => "add_long_cites()")),
-        || add_long_cites(source_map, user_journals),
+        || add_long_cites(&mut source_map, user_journals),
     );
 
     // Add the short cites for every source.
@@ -278,7 +293,8 @@ fn start_source_map<'a>(csl_library: &'a [CSLSource], tree: &'a [Branch]) -> Sou
 /// *e.g.* "Smith", "Smith & Jones", or "Smith et al.". If a short cite is not
 /// in the author list, it's added to the list. If the short cite is in the
 /// list, the `hereinafter` value is changed to true.
-fn check_hereinafters(mut source_map: SourceMap<'_>) -> SourceMap<'_> {
+//fn check_hereinafters(mut source_map: SourceMap<'_>) -> SourceMap<'_> {
+fn check_hereinafters(source_map: &mut SourceMap<'_>) {
     debug!(slog_scope::logger(), "Checking \"hereinafter\" needs...");
     // This will require two trips through the source_map: one to determine who
     // needs hereinafters, and another to set the field.
@@ -318,14 +334,10 @@ fn check_hereinafters(mut source_map: SourceMap<'_>) -> SourceMap<'_> {
     }
 
     debug!(slog_scope::logger(), "\"Hereinafter\" needs checked.");
-    source_map
 }
 
 /// Add long cites to sources.
-fn add_long_cites<'a>(
-    mut source_map: SourceMap<'a>,
-    user_journals: &'a Option<UserJournals>,
-) -> SourceMap<'a> {
+fn add_long_cites<'a>(source_map: &mut SourceMap<'a>, user_journals: &'a Option<UserJournals>) {
     debug!(slog_scope::logger(), "Adding long cites...");
 
     for (_, source) in source_map.iter_mut() {
@@ -343,7 +355,6 @@ fn add_long_cites<'a>(
     }
 
     debug!(slog_scope::logger(), "Long cites added.");
-    source_map
 }
 
 /// Add short cites to sources.
