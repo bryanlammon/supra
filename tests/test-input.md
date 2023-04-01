@@ -45,3 +45,29 @@ This sentence cites to the book in footnote nine (with a pincite).^[[@mauthorBoo
 This sentence cites to the multi-volume book in footnote ten (no pincite).^[[@nauthorMultiVolumeBookThis2021].]
 This sentence cites to the journal article in footnote eleven (with a pincite).^[[@dauthorTwoAuthorJournalArticle2021] at 101.]
 This sentence cites to the journal article in footnote twelve (no pincite).^[[@gauthorThreeAuthorJournalArticle2021].]
+
+# Cases
+
+## Full forms, w/o pincites
+
+This sentence cites to a case.^[[@DoeState2022].]
+This sentence cites to two cases.^[*See* [@JohnsonSmith2023]; [@UnitedStatesJones2022].]
+
+## Full forms, w/ pincites
+
+This cites to a case, but it should use the case's short form.^[*But see* [@PlaintiffDefendant1991] at 10.]
+This cites to two cases, but it should use their short form.^[*See* [@PlaintiffDefendant1992] at 205; [@PlaintiffDefendant1993] at 33.]
+
+## Short forms, w/o pincites
+
+This sentence cites to a case.^[[@PlaintiffDefendant1994].]
+This sentence cites to another case.^[*See* [@PlaintiffDefendant1995].]
+This sentence cites a case again, and should be in short form.^[[@PlaintiffDefendant1994].]
+This sentence cites a case again, and should be in short form.^[[@PlaintiffDefendant1995].]
+
+## Short forms, w/ pincites
+
+This sentence cites to a case.^[[@PlaintiffDefendant1996] at 10.]
+This sentence cites to another case.^[*See* [@PlaintiffDefendant1997] at 85.]
+This sentence cites a case again, and should be in short form.^[[@PlaintiffDefendant1996] at 11.]
+This sentence cites a case again, and should be in short form.^[[@PlaintiffDefendant1997] at 78.]

@@ -40,10 +40,13 @@ pub struct Source<'a> {
     pub id: String,
     pub source_type: SourceType,
     pub all_footnotes: Vec<i32>,
+    //pub first_page: Option<String>,
     pub long_cite_no_pin: Option<String>,
     pub long_cite_w_pin: Option<(String, String)>,
     pub short_author: Option<String>,
-    pub short_cite: Option<String>,
+    //pub short_cite: Option<String>,
+    pub short_cite_no_pin: Option<String>,
+    pub short_cite_w_pin: Option<String>,
     pub cited: bool,
     pub hereinafter: bool,
 }
@@ -74,8 +77,31 @@ impl Source<'_> {
     }
 
     /// Output a short cite.
-    pub fn short_cite(&self) -> String {
-        self.short_cite.as_ref().unwrap().to_string()
+    //pub fn short_cite(&self) -> String {
+    //    self.short_cite.as_ref().unwrap().to_string()
+    //}
+
+    /// Output a short cite with no pin.
+    pub fn short_cite_no_pin(&self) -> String {
+        self.short_cite_no_pin.as_ref().unwrap().to_string()
+    }
+
+    /// Output a short cite with a pin
+    pub fn short_cite_w_pin(&self, pin: &str) -> String {
+        let mut cite = self.short_cite_w_pin.as_ref().unwrap().to_owned();
+        if self.source_type == SourceType::Book
+            || self.source_type == SourceType::Chapter
+            || self.source_type == SourceType::JournalArticle
+            || self.source_type == SourceType::Manuscript
+        {
+            cite.push_str(", at ");
+        } else if self.source_type == SourceType::Case {
+            cite.push_str(" at ");
+        }
+
+        cite.push_str(pin);
+
+        cite
     }
 }
 
@@ -83,6 +109,7 @@ impl Source<'_> {
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum SourceType {
     Book,
+    Case,
     Chapter,
     JournalArticle,
     Manuscript,
@@ -233,6 +260,7 @@ fn start_source_map<'a>(csl_library: &'a [CSLSource], tree: &'a [Branch]) -> Sou
                         "chapter" => SourceType::Chapter,
                         "article-journal" => SourceType::JournalArticle,
                         "manuscript" => SourceType::Manuscript,
+                        "legal_case" => SourceType::Case,
                         _ => SourceType::Other,
                     };
 
@@ -377,12 +405,14 @@ fn add_short_cites(source_map: &mut SourceMap<'_>) {
     debug!(slog_scope::logger(), "Adding short cites...");
 
     for (_, source) in source_map.iter_mut() {
-        source.short_cite = Some(buildsource::build_short_cite(
+        let (short_cite_no_pin, short_cite_w_pin) = buildsource::build_short_cite(
             source.csl_source,
             &source.source_type,
             source.all_footnotes[0],
             source.hereinafter,
-        ));
+        );
+        source.short_cite_w_pin = Some(short_cite_w_pin);
+        source.short_cite_no_pin = Some(short_cite_no_pin);
     }
 
     debug!(slog_scope::logger(), "Short cites added.");

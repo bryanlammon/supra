@@ -30,6 +30,7 @@ pub struct CSLSource {
     pub container_title: Option<String>,
     #[serde(rename(deserialize = "container-title-short"))]
     pub container_title_short: Option<String>,
+    pub authority: Option<String>,
     pub edition: Option<String>,
     pub page: Option<String>,
     pub title: Option<String>,

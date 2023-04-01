@@ -25,7 +25,9 @@ pub fn build_source<'a>(
 
     // A short author is necessary to check hereinafters.
     let mut short_author = String::new();
-    add_short_author(csl_source, &source_type, &mut short_author);
+    if source_type != SourceType::Case {
+        add_short_author(csl_source, &source_type, &mut short_author);
+    }
 
     let all_footnotes = vec![first_footnote];
 
@@ -36,7 +38,9 @@ pub fn build_source<'a>(
         all_footnotes,
         long_cite_no_pin: None,
         long_cite_w_pin: None,
-        short_cite: None,
+        //short_cite: None,
+        short_cite_no_pin: None,
+        short_cite_w_pin: None,
         short_author: Some(short_author),
         cited: false,
         hereinafter: false,
@@ -73,89 +77,114 @@ pub fn build_long_cite(
         return Err(format!("{} does not have a title", &csl_source.id));
     }
 
+    let (long_cite_no_pin, long_cite_pre_pin, long_cite_post_pin) = match source_type {
+        SourceType::Book => build_book_long(csl_source, &source_type, hereinafter),
+        SourceType::Case => build_case_long(csl_source, &source_type, user_journals),
+        SourceType::Chapter => {
+            build_chapter_long(csl_source, &source_type, user_journals, hereinafter)
+        }
+        SourceType::JournalArticle => {
+            build_journal_article_long(csl_source, &source_type, user_journals, hereinafter)
+        }
+        SourceType::Manuscript => {
+            build_manuscript_long(csl_source, &source_type, user_journals, hereinafter)
+        }
+        SourceType::Other => {
+            return Err("Cannot build cite for source type `Other`".to_string());
+        }
+    };
+
     // Start with a large capacity string to avoid repeatedly reallocating
-    // memory. We're also starting with the long cite before any pincites. We'll combine this with the post-pincite portion later to creat a full, no-pincite long cite.
-    let mut long_cite_pre_pin = String::with_capacity(1024);
+    // memory. We're also starting with the long cite before any pincites. We'll
+    // combine this with the post-pincite portion later to creat a full,
+    // no-pincite long cite.
+    //let mut long_cite_pre_pin = String::with_capacity(1024);
 
-    if source_type == SourceType::Book && csl_source.volume.is_some() {
-        add_book_volume(csl_source, &mut long_cite_pre_pin);
-    }
+    //if source_type == SourceType::Book && csl_source.volume.is_some() {
+    //    add_book_volume(csl_source, &mut long_cite_pre_pin);
+    //}
 
-    if csl_source.author.is_some() {
-        add_authors(csl_source, &source_type, &mut long_cite_pre_pin);
-    }
+    //if source_type != SourceType::Case && csl_source.author.is_some() {
+    //    add_authors(csl_source, &source_type, &mut long_cite_pre_pin);
+    //}
 
-    if csl_source.title.is_some() {
-        add_title(csl_source, &source_type, &mut long_cite_pre_pin);
-    }
+    //if csl_source.title.is_some() {
+    //    add_title(csl_source, &source_type, &mut long_cite_pre_pin);
+    //}
 
-    if source_type == SourceType::Chapter {
-        add_in(&mut long_cite_pre_pin);
-    }
+    //if source_type == SourceType::Chapter {
+    //    add_in(&mut long_cite_pre_pin);
+    //}
 
-    if (source_type == SourceType::Chapter
-        || source_type == SourceType::JournalArticle
-        || source_type == SourceType::Manuscript)
-        && csl_source.volume.is_some()
-    {
-        add_other_volume(csl_source, &source_type, &mut long_cite_pre_pin);
-    }
+    //if (source_type == SourceType::Case
+    //    || source_type == SourceType::Chapter
+    //    || source_type == SourceType::JournalArticle
+    //    || source_type == SourceType::Manuscript)
+    //    && csl_source.volume.is_some()
+    //{
+    //    add_other_volume(csl_source, &source_type, &mut long_cite_pre_pin);
+    //}
 
-    if (source_type == SourceType::Chapter
-        || source_type == SourceType::JournalArticle
-        || source_type == SourceType::Manuscript)
-        && csl_source.container_title.is_some()
-    {
-        add_book_name(
-            csl_source,
-            &source_type,
-            user_journals,
-            &mut long_cite_pre_pin,
-        );
-    }
+    //if (source_type == SourceType::Case
+    //    || source_type == SourceType::Chapter
+    //    || source_type == SourceType::JournalArticle
+    //    || source_type == SourceType::Manuscript)
+    //    && csl_source.container_title.is_some()
+    //{
+    //    add_container_name(
+    //        csl_source,
+    //        &source_type,
+    //        user_journals,
+    //        &mut long_cite_pre_pin,
+    //    );
+    //}
 
-    if source_type == SourceType::Manuscript
-        && csl_source.issued.is_some()
-        && csl_source.issued.as_ref().unwrap().date_parts.is_some()
-    {
-        add_forthcoming(csl_source, &mut long_cite_pre_pin);
-    }
+    //if source_type == SourceType::Manuscript
+    //    && csl_source.issued.is_some()
+    //    && csl_source.issued.as_ref().unwrap().date_parts.is_some()
+    //{
+    //    add_forthcoming(csl_source, &mut long_cite_pre_pin);
+    //}
 
-    if (source_type == SourceType::Chapter || source_type == SourceType::JournalArticle)
-        && csl_source.page.is_some()
-    {
-        add_first_page(csl_source, &mut long_cite_pre_pin);
-    }
+    //if (source_type == SourceType::Case
+    //    || source_type == SourceType::Chapter
+    //    || source_type == SourceType::JournalArticle)
+    //    && csl_source.page.is_some()
+    //{
+    //    add_first_page(csl_source, &mut long_cite_pre_pin);
+    //}
 
     // Create another empty string for the post-pincite portion.
-    let mut long_cite_post_pin = String::with_capacity(1024);
+    //let mut long_cite_post_pin = String::with_capacity(1024);
 
     // Note, if an article's volume is four digits, no parenthetical (which
     // would be the year) will be added. This is to account for volumized years.
-    if (source_type == SourceType::Book
-        || source_type == SourceType::Chapter
-        || (source_type == SourceType::JournalArticle
-            && csl_source.volume.is_some()
-            && csl_source.volume.as_ref().unwrap().len() != 4))
-        && (csl_source.edition.is_some()
-            || csl_source.editor.is_some()
-            || csl_source.translator.is_some()
-            || csl_source.issued.is_some())
-    {
-        add_end_parenthetical(csl_source, &source_type, &mut long_cite_post_pin);
-    }
+    //if (source_type == SourceType::Book
+    //    || source_type == SourceType::Case
+    //    || source_type == SourceType::Chapter
+    //    || (source_type == SourceType::JournalArticle
+    //        && csl_source.volume.is_some()
+    //        && csl_source.volume.as_ref().unwrap().len() != 4))
+    //    && (csl_source.edition.is_some()
+    //        || csl_source.editor.is_some()
+    //        || csl_source.translator.is_some()
+    //        || csl_source.issued.is_some()
+    //        || csl_source.authority.is_some())
+    //{
+    //    add_end_parenthetical(csl_source, &source_type, &mut long_cite_post_pin);
+    //}
 
     // Add a hereinafter, if necessary
-    if hereinafter {
-        add_hereinafter(csl_source, &source_type, &mut long_cite_post_pin);
-    }
+    //if hereinafter {
+    //    add_hereinafter(csl_source, &source_type, &mut long_cite_post_pin);
+    //}
 
-    if source_type == SourceType::Manuscript && csl_source.url.is_some() {
-        add_url(csl_source, &mut long_cite_post_pin);
-    }
+    //if source_type == SourceType::Manuscript && csl_source.url.is_some() {
+    //    add_url(csl_source, &mut long_cite_post_pin);
+    //}
 
-    let mut long_cite_no_pin = long_cite_pre_pin.clone();
-    long_cite_no_pin.push_str(&long_cite_post_pin);
+    //let mut long_cite_no_pin = long_cite_pre_pin.clone();
+    //long_cite_no_pin.push_str(&long_cite_post_pin);
 
     trace!(
         slog_scope::logger(),
@@ -165,29 +194,321 @@ pub fn build_long_cite(
     Ok((long_cite_no_pin, long_cite_pre_pin, long_cite_post_pin))
 }
 
-/// Build the short cite.
+/// Build the short cite---with and without a pin--for a source.
 pub fn build_short_cite(
     csl_source: &CSLSource,
     source_type: &SourceType,
     first_footnote: i32,
     hereinafter: bool,
-) -> String {
-    let mut cite = String::with_capacity(256);
+) -> (String, String) {
+    let mut short_cite = String::with_capacity(256);
+
+    if source_type == &SourceType::Case {
+        add_short_title(csl_source, source_type, &mut short_cite);
+        if csl_source.volume.is_some() {
+            add_other_volume(csl_source, source_type, &mut short_cite);
+        }
+
+        if csl_source.container_title.is_some() {
+            short_cite.push_str(&csl_source.container_title.as_ref().unwrap().to_string());
+        }
+
+        if csl_source.page.is_some() {
+            let short_cite_no_pin = format!("{} {}", short_cite, csl_source.page.as_ref().unwrap());
+            (short_cite_no_pin, short_cite)
+        } else {
+            (short_cite.clone(), short_cite)
+        }
+    } else {
+        if csl_source.author.is_some() {
+            add_short_author(csl_source, source_type, &mut short_cite);
+        }
+
+        if hereinafter {
+            short_cite.push_str(", ");
+            add_short_title(csl_source, source_type, &mut short_cite);
+        }
+
+        short_cite.push_str(", *supra* note ");
+        short_cite.push_str(&first_footnote.to_string());
+
+        (short_cite.clone(), short_cite)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Functions for building cites for different sources.
+//
+////////////////////////////////////////////////////////////////////////////////
+
+/// Build the long cite---with and without a pin---for a book.
+fn build_book_long(
+    csl_source: &CSLSource,
+    source_type: &SourceType,
+    //user_journals: &Option<UserJournals>,
+    hereinafter: bool,
+) -> (String, String, String) {
+    // Start with a large capacity string to avoid repeatedly reallocating
+    // memory. We're also starting with the long cite before any pincites. We'll
+    // combine this with the post-pincite portion later to creat a full,
+    // no-pincite long cite.
+    let mut long_cite_pre_pin = String::with_capacity(1024);
+
+    if csl_source.volume.is_some() {
+        add_book_volume(csl_source, &mut long_cite_pre_pin);
+    };
 
     if csl_source.author.is_some() {
-        add_short_author(csl_source, source_type, &mut cite);
+        add_authors(csl_source, source_type, &mut long_cite_pre_pin);
+    }
+
+    add_title(csl_source, source_type, &mut long_cite_pre_pin);
+
+    // Create another empty string for the post-pincite portion.
+    let mut long_cite_post_pin = String::with_capacity(1024);
+
+    if csl_source.edition.is_some()
+        || csl_source.editor.is_some()
+        || csl_source.translator.is_some()
+        || csl_source.issued.is_some()
+    {
+        add_end_parenthetical(csl_source, source_type, &mut long_cite_post_pin);
     }
 
     if hereinafter {
-        cite.push_str(", ");
-        add_short_title(csl_source, source_type, &mut cite);
+        add_hereinafter(csl_source, source_type, &mut long_cite_post_pin);
     }
 
-    cite.push_str(", *supra* note ");
-    cite.push_str(&first_footnote.to_string());
+    let mut long_cite_no_pin = long_cite_pre_pin.clone();
+    long_cite_no_pin.push_str(&long_cite_post_pin);
 
-    cite
+    (long_cite_no_pin, long_cite_pre_pin, long_cite_post_pin)
 }
+
+/// Build the long cite---with and without a pin---for a case.
+fn build_case_long(
+    csl_source: &CSLSource,
+    source_type: &SourceType,
+    user_journals: &Option<UserJournals>,
+) -> (String, String, String) {
+    // Start with a large capacity string to avoid repeatedly reallocating
+    // memory. We're also starting with the long cite before any pincites. We'll
+    // combine this with the post-pincite portion later to creat a full,
+    // no-pincite long cite.
+    let mut long_cite_pre_pin = String::with_capacity(1024);
+
+    add_title(csl_source, source_type, &mut long_cite_pre_pin);
+
+    println!("{long_cite_pre_pin}");
+
+    if csl_source.volume.is_some() {
+        add_other_volume(csl_source, source_type, &mut long_cite_pre_pin);
+    }
+
+    println!("{long_cite_pre_pin}");
+
+    if csl_source.container_title.is_some() {
+        add_container_name(
+            csl_source,
+            source_type,
+            user_journals,
+            &mut long_cite_pre_pin,
+        );
+    }
+
+    if csl_source.page.is_some() {
+        add_first_page(csl_source, &mut long_cite_pre_pin);
+    }
+
+    // Create another empty string for the post-pincite portion.
+    let mut long_cite_post_pin = String::with_capacity(1024);
+
+    if csl_source.authority.is_some() || csl_source.issued.is_some() {
+        add_end_parenthetical(csl_source, source_type, &mut long_cite_post_pin);
+    }
+
+    let mut long_cite_no_pin = long_cite_pre_pin.clone();
+    long_cite_no_pin.push_str(&long_cite_post_pin);
+
+    (long_cite_no_pin, long_cite_pre_pin, long_cite_post_pin)
+}
+
+/// Build the long cite---with and without a pin---for a chapter.
+fn build_chapter_long(
+    csl_source: &CSLSource,
+    source_type: &SourceType,
+    user_journals: &Option<UserJournals>,
+    hereinafter: bool,
+) -> (String, String, String) {
+    // Start with a large capacity string to avoid repeatedly reallocating
+    // memory. We're also starting with the long cite before any pincites. We'll
+    // combine this with the post-pincite portion later to creat a full,
+    // no-pincite long cite.
+    let mut long_cite_pre_pin = String::with_capacity(1024);
+
+    if csl_source.author.is_some() {
+        add_authors(csl_source, source_type, &mut long_cite_pre_pin);
+    }
+
+    add_title(csl_source, source_type, &mut long_cite_pre_pin);
+
+    add_in(&mut long_cite_pre_pin);
+
+    if csl_source.volume.is_some() {
+        add_other_volume(csl_source, source_type, &mut long_cite_pre_pin);
+    }
+
+    if csl_source.container_title.is_some() {
+        add_container_name(
+            csl_source,
+            source_type,
+            user_journals,
+            &mut long_cite_pre_pin,
+        );
+    }
+
+    if csl_source.page.is_some() {
+        add_first_page(csl_source, &mut long_cite_pre_pin);
+    }
+
+    // Create another empty string for the post-pincite portion.
+    let mut long_cite_post_pin = String::with_capacity(1024);
+
+    if csl_source.edition.is_some()
+        || csl_source.editor.is_some()
+        || csl_source.translator.is_some()
+        || csl_source.issued.is_some()
+    {
+        add_end_parenthetical(csl_source, source_type, &mut long_cite_post_pin);
+    }
+
+    if hereinafter {
+        add_hereinafter(csl_source, source_type, &mut long_cite_post_pin);
+    }
+
+    let mut long_cite_no_pin = long_cite_pre_pin.clone();
+    long_cite_no_pin.push_str(&long_cite_post_pin);
+
+    (long_cite_no_pin, long_cite_pre_pin, long_cite_post_pin)
+}
+
+/// Build the long cite---with and without a pin---for a journal article.
+fn build_journal_article_long(
+    csl_source: &CSLSource,
+    source_type: &SourceType,
+    user_journals: &Option<UserJournals>,
+    hereinafter: bool,
+) -> (String, String, String) {
+    // Start with a large capacity string to avoid repeatedly reallocating
+    // memory. We're also starting with the long cite before any pincites. We'll
+    // combine this with the post-pincite portion later to creat a full,
+    // no-pincite long cite.
+    let mut long_cite_pre_pin = String::with_capacity(1024);
+
+    if csl_source.author.is_some() {
+        add_authors(csl_source, source_type, &mut long_cite_pre_pin);
+    }
+
+    add_title(csl_source, source_type, &mut long_cite_pre_pin);
+
+    if csl_source.volume.is_some() {
+        add_other_volume(csl_source, source_type, &mut long_cite_pre_pin);
+    }
+
+    if csl_source.container_title.is_some() {
+        add_container_name(
+            csl_source,
+            source_type,
+            user_journals,
+            &mut long_cite_pre_pin,
+        );
+    }
+
+    if csl_source.page.is_some() {
+        add_first_page(csl_source, &mut long_cite_pre_pin);
+    }
+
+    // Create another empty string for the post-pincite portion.
+    let mut long_cite_post_pin = String::with_capacity(1024);
+
+    if (csl_source.volume.is_some() && csl_source.volume.as_ref().unwrap().len() != 4)
+        && (csl_source.edition.is_some()
+            || csl_source.editor.is_some()
+            || csl_source.translator.is_some()
+            || csl_source.issued.is_some())
+    {
+        add_end_parenthetical(csl_source, source_type, &mut long_cite_post_pin);
+    }
+
+    if hereinafter {
+        add_hereinafter(csl_source, source_type, &mut long_cite_post_pin);
+    }
+
+    let mut long_cite_no_pin = long_cite_pre_pin.clone();
+    long_cite_no_pin.push_str(&long_cite_post_pin);
+
+    (long_cite_no_pin, long_cite_pre_pin, long_cite_post_pin)
+}
+
+/// Build the long cite---with and without a pin---for a manuscript.
+fn build_manuscript_long(
+    csl_source: &CSLSource,
+    source_type: &SourceType,
+    user_journals: &Option<UserJournals>,
+    hereinafter: bool,
+) -> (String, String, String) {
+    // Start with a large capacity string to avoid repeatedly reallocating
+    // memory. We're also starting with the long cite before any pincites. We'll
+    // combine this with the post-pincite portion later to creat a full,
+    // no-pincite long cite.
+    let mut long_cite_pre_pin = String::with_capacity(1024);
+
+    if csl_source.author.is_some() {
+        add_authors(csl_source, source_type, &mut long_cite_pre_pin);
+    }
+
+    add_title(csl_source, source_type, &mut long_cite_pre_pin);
+
+    if csl_source.volume.is_some() {
+        add_other_volume(csl_source, source_type, &mut long_cite_pre_pin);
+    }
+
+    if csl_source.container_title.is_some() {
+        add_container_name(
+            csl_source,
+            source_type,
+            user_journals,
+            &mut long_cite_pre_pin,
+        );
+    }
+
+    if csl_source.issued.is_some() && csl_source.issued.as_ref().unwrap().date_parts.is_some() {
+        add_forthcoming(csl_source, &mut long_cite_pre_pin);
+    }
+
+    // Create another empty string for the post-pincite portion.
+    let mut long_cite_post_pin = String::with_capacity(1024);
+
+    if hereinafter {
+        add_hereinafter(csl_source, source_type, &mut long_cite_post_pin);
+    }
+
+    if csl_source.url.is_some() {
+        add_url(csl_source, &mut long_cite_post_pin);
+    }
+
+    let mut long_cite_no_pin = long_cite_pre_pin.clone();
+    long_cite_no_pin.push_str(&long_cite_post_pin);
+
+    (long_cite_no_pin, long_cite_pre_pin, long_cite_post_pin)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Functions for adding parts to cites.
+//
+////////////////////////////////////////////////////////////////////////////////
 
 /// Add the volume at the beginning of a book that has one.
 fn add_book_volume(csl_source: &CSLSource, cite: &mut String) {
@@ -229,7 +550,7 @@ fn add_short_author(csl_source: &CSLSource, source_type: &SourceType, cite: &mut
 /// Add the title.
 ///
 /// If it's a book, also bold it. If it's a chapter, journal, or manuscript,
-/// "reverse italicize" it.
+/// "reverse italicize" it. If it's a case, let it be (TODO: shorten words in case names).
 fn add_title(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String) {
     if source_type == &SourceType::Book {
         let title = slog_scope::scope(&slog_scope::logger().new(o!("fn" => "bold()")), || {
@@ -245,17 +566,24 @@ fn add_title(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String
             || citetools::reverse_italicize(csl_source.title.as_ref().unwrap()),
         );
         cite.push_str(&title);
+    } else if source_type == &SourceType::Case {
+        let title = csl_source.title.as_ref().unwrap();
+        cite.push_str(title);
+        //cite.push_str(", ");
     }
 }
 
 /// Add the shortened title (if it exists).
 ///
-/// This adds the shortened title for a source. If there isn't one, it uses the long title and warns the user.
+/// This adds the shortened title for a source. If there isn't one, it uses the
+/// long title and warns the user.
 fn add_short_title(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String) {
     let short_title;
     if csl_source.title_short.is_some() {
         if source_type == &SourceType::Book {
             short_title = citetools::bold(csl_source.title_short.as_ref().unwrap());
+        } else if source_type == &SourceType::Case {
+            short_title = format!("*{}*", &csl_source.title_short.as_ref().unwrap());
         } else {
             short_title = slog_scope::scope(
                 &slog_scope::logger().new(o!("fn" => "reverse_italicize()")),
@@ -265,6 +593,8 @@ fn add_short_title(csl_source: &CSLSource, source_type: &SourceType, cite: &mut 
     } else {
         short_title = if source_type == &SourceType::Book {
             citetools::bold(csl_source.title.as_ref().unwrap())
+        } else if source_type == &SourceType::Case {
+            format!("*{}*", csl_source.title.as_ref().unwrap())
         } else {
             slog_scope::scope(
                 &slog_scope::logger().new(o!("fn" => "reverse_italicize()")),
@@ -273,11 +603,11 @@ fn add_short_title(csl_source: &CSLSource, source_type: &SourceType, cite: &mut 
         };
         warn!(
             slog_scope::logger(),
-            "No short title found for {}; using long title for possible hereinafters",
+            "No short title found for {}; using long title for short cites",
             Color::Blue.paint(&csl_source.id)
         );
         eprintln!(
-            "  {} No short title found for {}; using long title for possible hereinafters",
+            "  {} No short title found for {}; using long title for short cites",
             Color::Yellow.paint("WARN"),
             Color::Blue.paint(&csl_source.id)
         )
@@ -293,15 +623,18 @@ fn add_in(cite: &mut String) {
 
 /// Add the volume to articles, chapters, and manuscripts.
 fn add_other_volume(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String) {
-    if source_type == &SourceType::JournalArticle || source_type == &SourceType::Manuscript {
+    if source_type == &SourceType::Case
+        || source_type == &SourceType::JournalArticle
+        || source_type == &SourceType::Manuscript
+    {
         cite.push_str(", ");
     }
     cite.push_str(csl_source.volume.as_ref().unwrap());
     cite.push(' ');
 }
 
-/// The book or journal name to a chapter or article.
-fn add_book_name(
+/// The container name (book, journal name, or reporter) for cases, chapters, and articles.
+fn add_container_name(
     csl_source: &CSLSource,
     source_type: &SourceType,
     user_journals: &Option<UserJournals>,
@@ -313,6 +646,8 @@ fn add_book_name(
             slog_scope::scope(&slog_scope::logger().new(o!("fn" => "bold()")), || {
                 citetools::bold(csl_source.container_title.as_ref().unwrap())
             });
+    } else if source_type == &SourceType::Case {
+        container_title = csl_source.container_title.as_ref().unwrap().to_string();
     } else if csl_source.container_title_short.is_some() {
         container_title =
             slog_scope::scope(&slog_scope::logger().new(o!("fn" => "bold()")), || {
@@ -361,9 +696,18 @@ fn add_first_page(csl_source: &CSLSource, cite: &mut String) {
     cite.push_str(csl_source.page.as_ref().unwrap());
 }
 
-/// Add the ending parenthetical with edition, editors, translators, and year.
+/// Add the ending parenthetical with court, edition, editors, translators, and year.
 fn add_end_parenthetical(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String) {
     cite.push_str(" (");
+
+    // If it's a case, add the authority.
+    if source_type == &SourceType::Case
+        && csl_source.authority.is_some()
+        && csl_source.authority.as_ref().unwrap() != "U.S. Supreme Court"
+    {
+        cite.push_str(csl_source.authority.as_ref().unwrap());
+        cite.push(' ');
+    }
 
     // Add the edition.
     if (source_type == &SourceType::Book || source_type == &SourceType::Chapter)
@@ -442,50 +786,38 @@ fn add_url(csl_source: &CSLSource, cite: &mut String) {
     cite.push_str(csl_source.url.as_ref().unwrap());
 }
 
-//#[cfg(test)]
-//mod tests {
-//    use super::*;
+//#[cfg(test)] mod tests { use super::*;
 
-//    mod build_tests {
-//        use super::*;
-//        use crate::pre::csljson;
+//    mod build_tests { use super::*; use crate::pre::csljson;
 
-//        #[test]
-//        fn build_book() {
-//            let raw_json = r#"[{"id":"authorBookTitleTitle2021","author":[{"family":"Author","given":"Book","suffix":"Sr."},{"family":"Author","given":"Book","suffix":"Jr."}],"edition":"4th","issued":{"date-parts":[[2021,8]]},"title":"Book Title: A Title for the Dummy Book","title-short":"Book Title","type":"book"}]"#;
-//            let csl_source = &csljson::build_csl_lib(raw_json).unwrap()[0];
-//            let first_pin = Some("12");
+//        #[test] fn build_book() { let raw_json =
+//        r#"[{"id":"authorBookTitleTitle2021","author":[{"family":"Author","given":"Book","suffix":"Sr."},{"family":"Author","given":"Book","suffix":"Jr."}],"edition":"4th","issued":{"date-parts":[[2021,8]]},"title":"Book
+//            Title: A Title for the Dummy Book","title-short":"Book
+//            Title","type":"book"}]"#; let csl_source =
+//            &csljson::build_csl_lib(raw_json).unwrap()[0]; let first_pin =
+//            Some("12");
 
-//            let book = build_source(
-//                csl_source,
-//                "authorBookTitleTitle2021",
-//                SourceType::Book,
-//                &first_pin,
-//                1,
-//                &None,
-//            )
-//            .unwrap();
+//            let book = build_source( csl_source, "authorBookTitleTitle2021",
+//                SourceType::Book, &first_pin, 1, &None, ) .unwrap();
 
-//            assert_eq!(book.long_cite, "**Book Author, Sr. & Book Author, Jr.**, **Book Title: A Title for the Dummy Book** 12 (4th ed. 2021)");
-//            assert_eq!(book.short_cite, "**Author & Author**");
+//            assert_eq!(book.long_cite, "**Book Author, Sr. & Book Author,
+//            Jr.**, **Book Title: A Title for the Dummy Book** 12 (4th ed.
+//            2021)"); assert_eq!(book.short_cite, "**Author & Author**");
 //            assert_eq!(book.short_title, "**Book Title**");
 //        }
 
-//        #[test]
-//        fn build_chapter() {
-//            let raw_json = r#"[{"id":"authorBookSectionTitle2021","author":[{"family":"Author","given":"Book","suffix":"Sr."},{"family":"Author","given":"Book","suffix":"III"}],"container-title":"The Title of the Sectioned Book","edition":"5th","editor":[{"family":"Editor","given":"Book"}],"issued":{"date-parts":[[2021,8,1]]},"page":"12","title":"Book Section Title: The Section of a Book","translator":[{"family":"Translator","given":"Book"}],"type":"chapter","volume":"99"}]"#;
+//        #[test] fn build_chapter() { let raw_json =
+//        r#"[{"id":"authorBookSectionTitle2021","author":[{"family":"Author","given":"Book","suffix":"Sr."},{"family":"Author","given":"Book","suffix":"III"}],"container-title":"The
+//            Title of the Sectioned
+//            Book","edition":"5th","editor":[{"family":"Editor","given":"Book"}],"issued":{"date-parts":[[2021,8,1]]},"page":"12","title":"Book
+//            Section Title: The Section of a
+//            Book","translator":[{"family":"Translator","given":"Book"}],"type":"chapter","volume":"99"}]"#;
 //            let csl_source = &csljson::build_csl_lib(raw_json).unwrap()[0];
 //            let first_pin = Some("12");
 
-//            let chapter = build_source(
-//                csl_source,
-//                "authorBookSectionTitle2021",
-//                SourceType::Chapter,
-//                &first_pin,
-//                1,
-//                &None,
-//            )
-//            .unwrap();
+//            let chapter = build_source( csl_source,
+//                "authorBookSectionTitle2021", SourceType::Chapter, &first_pin,
+//                1, &None, ) .unwrap();
 
 //            assert_eq!(chapter.long_cite, "Book Author, Sr. & Book Author III, *Book Section Title: The Section of a Book*, *in* 99 **The Title of the Sectioned Book** 12, 12 (5th ed., Book Editor ed., Book Translator trans., 2021)");
 //            assert_eq!(chapter.short_cite, "Author & Author");
@@ -493,45 +825,43 @@ fn add_url(csl_source: &CSLSource, cite: &mut String) {
 //                chapter.short_title,
 //                "*Book Section Title: The Section of a Book*"
 //            );
-//        }
-//        #[test]
-//        fn build_article() {
-//            let raw_json = r#"[{"id":"authorJournalArticleTitle2021","author":[{"family":"Author","given":"Article"},{"family":"Author","given":"Article","suffix":"Jr."},{"family":"Third","given":"Article Author"}],"container-title":"Journal of Journal Articles","issued":{"season":2,"date-parts":[[2021]]},"page":"1000","title":"Journal Article Title: A Journal Article","title-short":"Journal Article","type":"article-journal","volume":"99"}]"#;
-//            let csl_source = &csljson::build_csl_lib(raw_json).unwrap()[0];
-//            let first_pin = Some("1012");
+//        } #[test] fn build_article() { let raw_json =
+//        r#"[{"id":"authorJournalArticleTitle2021","author":[{"family":"Author","given":"Article"},{"family":"Author","given":"Article","suffix":"Jr."},{"family":"Third","given":"Article
+//        Author"}],"container-title":"Journal of Journal
+//            Articles","issued":{"season":2,"date-parts":[[2021]]},"page":"1000","title":"Journal
+//            Article Title: A Journal Article","title-short":"Journal
+//            Article","type":"article-journal","volume":"99"}]"#; let
+//            csl_source = &csljson::build_csl_lib(raw_json).unwrap()[0]; let
+//            first_pin = Some("1012");
 
-//            let article = build_source(
-//                csl_source,
-//                "authorJournalArticleTitle2021",
-//                SourceType::JournalArticle,
-//                &first_pin,
-//                1,
-//                &None,
-//            )
-//            .unwrap();
+//            let article = build_source( csl_source,
+//                "authorJournalArticleTitle2021", SourceType::JournalArticle,
+//                &first_pin, 1, &None, ) .unwrap();
 
-//            assert_eq!(article.long_cite, "Article Author, Article Author, Jr. & Article Author Third, *Journal Article Title: A Journal Article*, 99 **J. J. Articles** 1000, 1012 (2021)");
+//            assert_eq!(article.long_cite, "Article Author, Article Author, Jr.
+//            & Article Author Third, *Journal Article Title: A Journal
+//            Article*, 99 **J. J. Articles** 1000, 1012 (2021)");
 //            assert_eq!(article.short_cite, "Author et al.");
 //            assert_eq!(article.short_title, "*Journal Article*");
 //        }
 
-//        #[test]
-//        fn build_manuscript() {
-//            let raw_json = r#"[{"id":"authorManuscriptTitleNot2020","author":[{"family":"Author","given":"Manuscript"}],"container-title":"University of Manuscripts Law Review","issued":{"date-parts":[[2020]]},"title":"Manuscript Title: Not Yet a Journal Article","title-short":"Manuscript Title","type":"manuscript","URL":"www.ssrn.com/manuscript", "volume":"45"}]"#;
-//            let csl_source = &csljson::build_csl_lib(raw_json).unwrap()[0];
-//            let first_pin = Some("12");
+//        #[test] fn build_manuscript() { let raw_json =
+//        r#"[{"id":"authorManuscriptTitleNot2020","author":[{"family":"Author","given":"Manuscript"}],"container-title":"University
+//            of Manuscripts Law
+//            Review","issued":{"date-parts":[[2020]]},"title":"Manuscript
+//            Title: Not Yet a Journal Article","title-short":"Manuscript
+//            Title","type":"manuscript","URL":"www.ssrn.com/manuscript",
+//            "volume":"45"}]"#; let csl_source =
+//            &csljson::build_csl_lib(raw_json).unwrap()[0]; let first_pin =
+//            Some("12");
 
-//            let manuscript = build_source(
-//                csl_source,
-//                "authorManuscriptTitleNot2020",
-//                SourceType::Manuscript,
-//                &first_pin,
-//                1,
-//                &None,
-//            )
-//            .unwrap();
+//            let manuscript = build_source( csl_source,
+//                "authorManuscriptTitleNot2020", SourceType::Manuscript,
+//                &first_pin, 1, &None, ) .unwrap();
 
-//            assert_eq!(manuscript.long_cite, "Manuscript Author, *Manuscript Title: Not Yet a Journal Article*, 45 **U. Manuscripts L. Rev.** (forthcoming 2020) (manuscript at 12), www.ssrn.com/manuscript");
+//            assert_eq!(manuscript.long_cite, "Manuscript Author, *Manuscript
+//            Title: Not Yet a Journal Article*, 45 **U. Manuscripts L. Rev.**
+//            (forthcoming 2020) (manuscript at 12), www.ssrn.com/manuscript");
 //            assert_eq!(manuscript.short_cite, "Author");
 //            assert_eq!(manuscript.short_title, "*Manuscript Title*");
 //        }
