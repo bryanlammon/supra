@@ -20,8 +20,6 @@ pub type SourceMap<'a> = HashMap<&'a str, Source<'a>>;
 /// * `id`: The ID for the `Source`.
 /// * `source_type`: The type of source, stored as a [`SourceType`] enum
 ///   variant.
-/// * `first_footnote`: The first footnote in which a source is cited. Used for
-///   creating cross references.
 /// * `all_footnotes`: A collection of all of the footnotes in which the source
 ///   is cited.
 /// * `long_cite_no_pin`: A [`String`] of the source's long cite, with no
@@ -41,7 +39,6 @@ pub struct Source<'a> {
     pub csl_source: &'a CSLSource,
     pub id: String,
     pub source_type: SourceType,
-    pub first_footnote: i32,
     pub all_footnotes: Vec<i32>,
     pub long_cite_no_pin: Option<String>,
     pub long_cite_w_pin: Option<(String, String)>,
@@ -383,7 +380,7 @@ fn add_short_cites(source_map: &mut SourceMap<'_>) {
         source.short_cite = Some(buildsource::build_short_cite(
             source.csl_source,
             &source.source_type,
-            source.first_footnote,
+            source.all_footnotes[0],
             source.hereinafter,
         ));
     }

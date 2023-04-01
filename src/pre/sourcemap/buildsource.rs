@@ -27,12 +27,13 @@ pub fn build_source<'a>(
     let mut short_author = String::new();
     add_short_author(csl_source, &source_type, &mut short_author);
 
+    let all_footnotes = vec![first_footnote];
+
     let new_source = Source {
         csl_source,
         id: id.to_string(),
         source_type,
-        first_footnote,
-        all_footnotes: vec![first_footnote],
+        all_footnotes,
         long_cite_no_pin: None,
         long_cite_w_pin: None,
         short_cite: None,
