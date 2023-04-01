@@ -391,36 +391,3 @@ fn add_short_cites(source_map: &mut SourceMap<'_>) {
 
     debug!(slog_scope::logger(), "Short cites added.");
 }
-
-//#[cfg(test)]
-////mod tests {
-//    use super::*;
-
-//    mod hereinafter_tests { use super::*;
-
-//        #[test] fn cited_once() { let mut source_map = HashMap::from([ (
-//        "[@jones1999]", Source { id: "jones1999".to_string(), source_type:
-//            SourceType::JournalArticle, first_footnote: 1, all_footnotes:
-//                vec![1, 2, 3], long_cite: "Jones 1999 Long Cite".to_string(),
-//                    short_cite: "Jones".to_string(), short_title: "Jones 1999
-//                    Short Name".to_string(), cited: false, hereinafter: true,
-//                        }, ), ( "[@jones2021]", Source { id:
-//                        "jones2021".to_string(), source_type:
-//                        SourceType::JournalArticle, first_footnote: 1,
-//                        all_footnotes: vec![1], long_cite: "Jones 2021 Long
-//                        Cite".to_string(), short_cite: "Jones".to_string(),
-//                        short_title: "Jones 2021 Short Name".to_string(),
-//                        cited: false, hereinafter: true, }, ), ]);
-
-//            source_map = add_short_cites(source_map);
-
-//            assert_eq!( &source_map["[@jones1999]"].long_cite, "Jones 1999
-//                Long Cite [hereinafter Jones, Jones 1999 Short Name]" );
-//                assert_eq!( &source_map["[@jones1999]"].short_cite, "Jones,
-//            Jones 1999 Short Name, *supra* note 1" ); assert_eq!(
-//            &source_map["[@jones2021]"].long_cite, "Jones 2021 Long Cite" );
-//                assert_eq!( &source_map["[@jones2021]"].short_cite, "Jones,
-//                *supra* note 1" );
-//        }
-//    }
-//}
