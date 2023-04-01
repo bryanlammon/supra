@@ -206,13 +206,12 @@ fn start_source_map<'a>(csl_library: &'a [CSLSource], tree: &'a [Branch]) -> Sou
 
                     // If found in the CSL JSON library, add it to the source
                     // map.
-                    let csl_source = csl_source.unwrap();
-
                     trace!(
                         slog_scope::logger(),
                         "Found {:?} in the CSL JSON library.",
                         csl_id
                     );
+                    let csl_source = csl_source.unwrap();
 
                     // If there's no type in the CSL JSON library, log the error and continue to the next iteration of the loop.
                     if csl_source.source_type.is_none() {

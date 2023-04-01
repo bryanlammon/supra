@@ -15,9 +15,7 @@ pub fn build_source<'a>(
     csl_source: &'a CSLSource,
     id: &'a str,
     source_type: SourceType,
-    //first_pin: &'a Option<&'a str>,
     first_footnote: i32,
-    //user_journals: &'a Option<UserJournals>,
 ) -> Result<Source<'a>, String> {
     trace!(
         slog_scope::logger(),
