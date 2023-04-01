@@ -15,16 +15,26 @@ pub type SourceMap<'a> = HashMap<&'a str, Source<'a>>;
 ///
 /// The fields are used as follows:
 ///
-/// * `csl_source`: A reference to the [`CSLSource`] data for the `Source`, which is used for creating the long and short cites.
+/// * `csl_source`: A reference to the [`CSLSource`] data for the `Source`,
+///   which is used for creating the long and short cites.
 /// * `id`: The ID for the `Source`.
-/// * `source_type`: The type of source, stored as a [`SourceType`] enum variant.
-/// * `first_footnote`: The first footnote in which a source is cited. Used for creating cross references.
-/// * `all_footnotes`: A collection of all of the footnotes in which the source is cited.
-/// * `long_cite_no_pin`: A [`String`] of the source's long cite, with no pincite.
-/// * `long_cite_with_pin`: A tuple of [`String`]s that are used for long cites with pincites.
-/// * `short_author`: The author used for short cites. This is used do determine the need for hereinafters when building the source map.
-/// * `short_cite`: The short form of the citation. TODO This should be broken out into the with and without pin varieties to facilitate cases.
-/// * `cited`: Whether the `Source` has been cited. Used to determine whether a short form can be used. TODO This could be changed to `last_cited` and used for determining whether `Id.` can be used instead of a short cite.
+/// * `source_type`: The type of source, stored as a [`SourceType`] enum
+///   variant.
+/// * `first_footnote`: The first footnote in which a source is cited. Used for
+///   creating cross references.
+/// * `all_footnotes`: A collection of all of the footnotes in which the source
+///   is cited.
+/// * `long_cite_no_pin`: A [`String`] of the source's long cite, with no
+///   pincite.
+/// * `long_cite_with_pin`: A tuple of [`String`]s that are used for long cites
+///   with pincites.
+/// * `short_author`: The author used for short cites. This is used do determine
+///   the need for hereinafters when building the source map.
+/// * `short_cite`: The short form of the citation. TODO This should be broken
+///   out into the with and without pin varieties to facilitate cases.
+/// * `cited`: Whether the `Source` has been cited. Used to determine whether a
+///   short form can be used. TODO This could be changed to `last_cited` and
+///   used for determining whether `Id.` can be used instead of a short cite.
 /// * `hereinafter`: Whether the `Source` requires a hereinafter.
 #[derive(Debug)]
 pub struct Source<'a> {
@@ -123,14 +133,10 @@ pub fn build_source_map<'a>(
     );
 
     // Add the short cites for every source.
-    source_map = slog_scope::scope(
+    slog_scope::scope(
         &slog_scope::logger().new(o!("fn" => "add_short_cites()")),
-        || add_short_cites(source_map),
+        || add_short_cites(&mut source_map),
     );
-
-    // Finish the source map with appropriate short cites source_map =
-    //slog_scope::scope( &slog_scope::logger().new(o!("fn" =>
-    //    "add_short_cites()")), || add_short_cites(source_map), );
 
     debug!(slog_scope::logger(), "Source map complete.");
     source_map
@@ -152,115 +158,11 @@ fn start_source_map<'a>(csl_library: &'a [CSLSource], tree: &'a [Branch]) -> Sou
                     // Remove the brackets and @ to search through the CSL
                     // library's ids
                     let csl_id = &citation.reference[2..citation.reference.len() - 1];
-                    if !source_map.contains_key(citation.reference) {
-                        // Iterate through the CSL JSON library looking for the
-                        // id
-                        trace!(
-                            slog_scope::logger(),
-                            "Searching the CSL JSON library for {:?}...",
-                            csl_id
-                        );
-                        let mut iter = csl_library.iter();
-                        let csl_source = iter.find(|&x| x.id == csl_id);
 
-                        // If found in the CSL JSON library, add it to the
-                        // source map.
-                        if let Some(csl_source) = csl_source {
-                            trace!(
-                                slog_scope::logger(),
-                                "Found {:?} in the CSL JSON library.",
-                                csl_id
-                            );
-                            // Determine the source type. If there's no type,
-                            // don't add anything and log the problem. All
-                            // supported source types should be in this match.
-                            let source_type;
-                            if csl_source.source_type.is_some() {
-                                source_type =
-                                    match csl_source.source_type.as_ref().unwrap().as_str() {
-                                        "book" => SourceType::Book,
-                                        "chapter" => SourceType::Chapter,
-                                        "article-journal" => SourceType::JournalArticle,
-                                        "manuscript" => SourceType::Manuscript,
-                                        _ => SourceType::Other,
-                                    };
-
-                                if source_type != SourceType::Other {
-                                    match slog_scope::scope(
-                                        &slog_scope::logger().new(o!("fn" => "build_source()")),
-                                        || {
-                                            buildsource::build_source(
-                                                csl_source,
-                                                csl_id,
-                                                source_type,
-                                                //&citation.pincite,
-                                                footnote.number,
-                                                //&user_journals,
-                                            )
-                                        },
-                                    ) {
-                                        Ok(source) => {
-                                            trace!(
-                                                slog_scope::logger(),
-                                                "Adding source {}",
-                                                Color::Blue.paint(csl_id)
-                                            );
-                                            source_map.insert(citation.reference, source);
-                                        }
-                                        Err(e) => {
-                                            warn!(
-                                                slog_scope::logger(),
-                                                "Cannot build citation for {}; {}",
-                                                Color::Blue.paint(csl_id),
-                                                e
-                                            );
-                                            eprintln!(
-                                                "  {} Cannot build citation for {}; {:?}",
-                                                Color::Yellow.paint("WARN"),
-                                                Color::Blue.paint(csl_id),
-                                                e
-                                            )
-                                        }
-                                    }
-                                } else {
-                                    // Unsupported type
-                                    warn!(
-                                        slog_scope::logger(),
-                                        "{}'s type ({}) is not supported; not adding to source map",
-                                        Color::Blue.paint(csl_id),
-                                        csl_source.source_type.as_ref().unwrap(),
-                                    );
-                                    eprintln!(
-                                        "  {} {}'s type ({}) is not supported; not adding to source map",
-                                        Color::Yellow.paint("WARN"),
-                                        Color::Blue.paint(csl_id),
-                                        csl_source.source_type.as_ref().unwrap(),
-                                    );
-                                }
-                            } else {
-                                // No type in the CSL library
-                                warn!(
-                                    slog_scope::logger(),
-                                    "{} does not have a type; not adding to source map",
-                                    Color::Blue.paint(csl_id),
-                                );
-                                eprintln!(
-                                    "  {} {} does not have a type; not adding to source map",
-                                    Color::Yellow.paint("WARN"),
-                                    Color::Blue.paint(csl_id)
-                                );
-                            }
-                        } else {
-                            // Citation was not found in the CSL JSON library
-                            warn!(slog_scope::logger(), "{} was not found in the CSL JSON library; not adding to source map", Color::Blue.paint(csl_id));
-                            eprintln!("  {} {} was not found in the CSL JSON library; not adding to source map",
-                                Color::Yellow.paint("WARN"),
-                                Color::Blue.paint(csl_id)
-                            );
-                        }
-                    } else {
-                        // The key is already in the sourcemap. Add the footnote
-                        // number to the list of footnotes.
+                    // If the key is already in the sourcemap, Add the footnote
+                    // number to the list of footnotes and continue to the next
+                    // iteration of the loop.
+                    if source_map.contains_key(citation.reference) {
                         source_map
                             .get_mut(&citation.reference)
                             .unwrap()
@@ -273,6 +175,123 @@ fn start_source_map<'a>(csl_library: &'a [CSLSource], tree: &'a [Branch]) -> Sou
                             footnote.number,
                             Color::Blue.paint(csl_id)
                         );
+
+                        continue;
+                    }
+
+                    // Iterate through the CSL JSON library looking for the id
+                    trace!(
+                        slog_scope::logger(),
+                        "Searching the CSL JSON library for {:?}...",
+                        csl_id
+                    );
+                    let mut iter = csl_library.iter();
+                    let csl_source = iter.find(|&x| x.id == csl_id);
+
+                    // If the citation is not found in the CSL JSON library, log
+                    // the error and continue to the next iteration of the loop.
+                    if csl_source.is_none() {
+                        warn!(
+                            slog_scope::logger(),
+                            "{} was not found in the CSL JSON library; not adding to source map",
+                            Color::Blue.paint(csl_id)
+                        );
+                        eprintln!("  {} {} was not found in the CSL JSON library; not adding to source map",
+                                Color::Yellow.paint("WARN"),
+                                Color::Blue.paint(csl_id)
+                            );
+
+                        continue;
+                    }
+
+                    // If found in the CSL JSON library, add it to the source
+                    // map.
+                    let csl_source = csl_source.unwrap();
+
+                    trace!(
+                        slog_scope::logger(),
+                        "Found {:?} in the CSL JSON library.",
+                        csl_id
+                    );
+
+                    // If there's no type in the CSL JSON library, log the error and continue to the next iteration of the loop.
+                    if csl_source.source_type.is_none() {
+                        warn!(
+                            slog_scope::logger(),
+                            "{} does not have a type; not adding to source map",
+                            Color::Blue.paint(csl_id),
+                        );
+                        eprintln!(
+                            "  {} {} does not have a type; not adding to source map",
+                            Color::Yellow.paint("WARN"),
+                            Color::Blue.paint(csl_id)
+                        );
+
+                        continue;
+                    }
+
+                    // Determine the source type. All supported source types
+                    // should be in this match.
+                    let source_type = match csl_source.source_type.as_ref().unwrap().as_str() {
+                        "book" => SourceType::Book,
+                        "chapter" => SourceType::Chapter,
+                        "article-journal" => SourceType::JournalArticle,
+                        "manuscript" => SourceType::Manuscript,
+                        _ => SourceType::Other,
+                    };
+
+                    // Unsupported type
+                    if source_type == SourceType::Other {
+                        warn!(
+                            slog_scope::logger(),
+                            "{}'s type ({}) is not supported; not adding to source map",
+                            Color::Blue.paint(csl_id),
+                            csl_source.source_type.as_ref().unwrap(),
+                        );
+                        eprintln!(
+                            "  {} {}'s type ({}) is not supported; not adding to source map",
+                            Color::Yellow.paint("WARN"),
+                            Color::Blue.paint(csl_id),
+                            csl_source.source_type.as_ref().unwrap(),
+                        );
+
+                        continue;
+                    }
+
+                    // Build the Source.
+                    match slog_scope::scope(
+                        &slog_scope::logger().new(o!("fn" => "build_source()")),
+                        || {
+                            buildsource::build_source(
+                                csl_source,
+                                csl_id,
+                                source_type,
+                                footnote.number,
+                            )
+                        },
+                    ) {
+                        Ok(source) => {
+                            trace!(
+                                slog_scope::logger(),
+                                "Adding source {}",
+                                Color::Blue.paint(csl_id)
+                            );
+                            source_map.insert(citation.reference, source);
+                        }
+                        Err(e) => {
+                            warn!(
+                                slog_scope::logger(),
+                                "Cannot build citation for {}; {}",
+                                Color::Blue.paint(csl_id),
+                                e
+                            );
+                            eprintln!(
+                                "  {} Cannot build citation for {}; {:?}",
+                                Color::Yellow.paint("WARN"),
+                                Color::Blue.paint(csl_id),
+                                e
+                            )
+                        }
                     }
                 }
             }
@@ -358,7 +377,7 @@ fn add_long_cites<'a>(source_map: &mut SourceMap<'a>, user_journals: &'a Option<
 }
 
 /// Add short cites to sources.
-fn add_short_cites(mut source_map: SourceMap<'_>) -> SourceMap<'_> {
+fn add_short_cites(source_map: &mut SourceMap<'_>) {
     debug!(slog_scope::logger(), "Adding short cites...");
 
     for (_, source) in source_map.iter_mut() {
@@ -371,92 +390,37 @@ fn add_short_cites(mut source_map: SourceMap<'_>) -> SourceMap<'_> {
     }
 
     debug!(slog_scope::logger(), "Short cites added.");
-    source_map
 }
-
-///// Rebuild short cites for sources that need a hereinafter short form.
-/////
-///// Takes the mutable source map and determines who needs a hereinafter. The
-///// author map must be set to true (meaning that the same short author is used
-///// for multiple sources) and the source is cited more than once. If there is
-///// only one citation to a source, there is no need for a hereinafter.
-//fn add_short_cites(mut source_map: SourceMap) -> SourceMap { debug!(
-//    slog_scope::logger(), "Starting \"hereinafter\" additions..." );
-
-//    for (_, source) in source_map.iter_mut() { if source.hereinafter &&
-//        source.all_footnotes.len() > 1 { source.long_cite.push_str("
-//            [hereinafter "); source.long_cite.push_str(&source.short_cite);
-//            source.long_cite.push_str(", ");
-//            source.long_cite.push_str(&source.short_title);
-//            source.long_cite.push(']');
-
-//            source.short_cite.push_str(", ");
-//            source.short_cite.push_str(&source.short_title);
-//        } source.short_cite.push_str(", *supra* note "); source .short_cite
-//        .push_str(&source.first_footnote.to_string());
-//    }
-
-//    debug!(slog_scope::logger(), "\"Hereinafters\" added."); source_map
-//}
 
 //#[cfg(test)]
 ////mod tests {
 //    use super::*;
 
-//    mod hereinafter_tests {
-//        use super::*;
+//    mod hereinafter_tests { use super::*;
 
-//        #[test]
-//        fn cited_once() {
-//            let mut source_map = HashMap::from([
-//                (
-//                    "[@jones1999]",
-//                    Source {
-//                        id: "jones1999".to_string(),
-//                        source_type: SourceType::JournalArticle,
-//                        first_footnote: 1,
-//                        all_footnotes: vec![1, 2, 3],
-//                        long_cite: "Jones 1999 Long Cite".to_string(),
-//                        short_cite: "Jones".to_string(),
-//                        short_title: "Jones 1999 Short Name".to_string(),
-//                        cited: false,
-//                        hereinafter: true,
-//                    },
-//                ),
-//                (
-//                    "[@jones2021]",
-//                    Source {
-//                        id: "jones2021".to_string(),
-//                        source_type: SourceType::JournalArticle,
-//                        first_footnote: 1,
-//                        all_footnotes: vec![1],
-//                        long_cite: "Jones 2021 Long Cite".to_string(),
-//                        short_cite: "Jones".to_string(),
+//        #[test] fn cited_once() { let mut source_map = HashMap::from([ (
+//        "[@jones1999]", Source { id: "jones1999".to_string(), source_type:
+//            SourceType::JournalArticle, first_footnote: 1, all_footnotes:
+//                vec![1, 2, 3], long_cite: "Jones 1999 Long Cite".to_string(),
+//                    short_cite: "Jones".to_string(), short_title: "Jones 1999
+//                    Short Name".to_string(), cited: false, hereinafter: true,
+//                        }, ), ( "[@jones2021]", Source { id:
+//                        "jones2021".to_string(), source_type:
+//                        SourceType::JournalArticle, first_footnote: 1,
+//                        all_footnotes: vec![1], long_cite: "Jones 2021 Long
+//                        Cite".to_string(), short_cite: "Jones".to_string(),
 //                        short_title: "Jones 2021 Short Name".to_string(),
-//                        cited: false,
-//                        hereinafter: true,
-//                    },
-//                ),
-//            ]);
+//                        cited: false, hereinafter: true, }, ), ]);
 
 //            source_map = add_short_cites(source_map);
 
-//            assert_eq!(
-//                &source_map["[@jones1999]"].long_cite,
-//                "Jones 1999 Long Cite [hereinafter Jones, Jones 1999 Short Name]"
-//            );
-//            assert_eq!(
-//                &source_map["[@jones1999]"].short_cite,
-//                "Jones, Jones 1999 Short Name, *supra* note 1"
-//            );
-//            assert_eq!(
-//                &source_map["[@jones2021]"].long_cite,
-//                "Jones 2021 Long Cite"
-//            );
-//            assert_eq!(
-//                &source_map["[@jones2021]"].short_cite,
-//                "Jones, *supra* note 1"
-//            );
+//            assert_eq!( &source_map["[@jones1999]"].long_cite, "Jones 1999
+//                Long Cite [hereinafter Jones, Jones 1999 Short Name]" );
+//                assert_eq!( &source_map["[@jones1999]"].short_cite, "Jones,
+//            Jones 1999 Short Name, *supra* note 1" ); assert_eq!(
+//            &source_map["[@jones2021]"].long_cite, "Jones 2021 Long Cite" );
+//                assert_eq!( &source_map["[@jones2021]"].short_cite, "Jones,
+//                *supra* note 1" );
 //        }
 //    }
 //}
