@@ -24,7 +24,7 @@ pub fn render(
     // reallocations.
     let mut output = String::new();
 
-    // Track the footnotes.
+    // Track the footnotes and cites.
     let mut current_footnote = 0;
 
     for branch in tree {

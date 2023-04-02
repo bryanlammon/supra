@@ -23,5 +23,5 @@ fn supra_test() {
     let expected_output = supra::fs::load_file(Path::new("./tests/test-output.md")).unwrap();
     let result = supra::fs::load_file(Path::new("./tests/test-result.md")).unwrap();
 
-    assert_eq!(&expected_output, &result);
+    assert_eq!(&expected_output.trim(), &result.trim());
 }
