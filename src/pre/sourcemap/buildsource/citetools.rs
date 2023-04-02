@@ -1,11 +1,15 @@
 //! This module contains tools for creating citations.
 
 use super::{journalnames, replacements};
-use crate::pre::{csljson::NameVariable, userjournals::UserJournals};
+use crate::pre::{
+    csljson::{CSLSource, NameVariable},
+    sourcemap::SourceType,
+    userjournals::UserJournals,
+};
 use ansi_term::Color;
 use lazy_static::lazy_static;
 use regex::Regex;
-use slog::{trace, warn};
+use slog::{o, trace, warn};
 
 lazy_static! {
     /// Regex for reverse italicization at the beginning and end of titles.
@@ -27,6 +31,43 @@ lazy_static! {
     ///
     /// Convert any <i> or </i> surrounded by non-whitespace characters to *.
     pub static ref ITALICS4: Regex = Regex::new(r"<i>|</i>").unwrap();
+}
+
+/// Add the volume at the beginning of a book that has one.
+pub fn add_book_volume(csl_source: &CSLSource, cite: &mut String) {
+    cite.push_str(csl_source.volume.as_ref().unwrap());
+    cite.push(' ');
+}
+
+/// Add the authors. If it's a book, also bold the authors.
+pub fn add_authors(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String) {
+    let mut author = slog_scope::scope(
+        &slog_scope::logger().new(o!("fn" => "build_long_author")),
+        || build_long_author(csl_source.author.as_ref().unwrap()),
+    );
+
+    if source_type == &SourceType::Book {
+        author = slog_scope::scope(&slog_scope::logger().new(o!("fn" => "bold()")), || {
+            bold(&author)
+        });
+    }
+
+    author.push_str(", ");
+
+    cite.push_str(&author);
+}
+
+/// Add the short author for hereinafters and short cites.
+pub fn add_short_author(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String) {
+    let mut short_author = slog_scope::scope(
+        &slog_scope::logger().new(o!("fn" => "build_short_author()")),
+        || build_short_author(csl_source.author.as_ref().unwrap()),
+    );
+    if source_type == &SourceType::Book {
+        short_author = bold(&short_author);
+    }
+
+    cite.push_str(&short_author);
 }
 
 /// Builds the long author (*i.e.*, all authors, full names) for various
@@ -146,6 +187,74 @@ pub fn build_short_author(name_vector: &[NameVariable]) -> String {
     short_author
 }
 
+/// Add the title.
+///
+/// If it's a book, also bold it. If it's a chapter, journal, or manuscript,
+/// "reverse italicize" it. If it's a case, let it be (TODO: shorten words in case names).
+pub fn add_title(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String) {
+    if source_type == &SourceType::Book {
+        let title = slog_scope::scope(&slog_scope::logger().new(o!("fn" => "bold()")), || {
+            bold(csl_source.title.as_ref().unwrap())
+        });
+        cite.push_str(&title);
+    } else if source_type == &SourceType::Chapter
+        || source_type == &SourceType::JournalArticle
+        || source_type == &SourceType::Manuscript
+    {
+        let title = slog_scope::scope(
+            &slog_scope::logger().new(o!("fn" => "reverse_italicize()")),
+            || reverse_italicize(csl_source.title.as_ref().unwrap()),
+        );
+        cite.push_str(&title);
+    } else if source_type == &SourceType::Case {
+        let title = csl_source.title.as_ref().unwrap();
+        cite.push_str(title);
+    }
+}
+
+/// Add the shortened title (if it exists).
+///
+/// This adds the shortened title for a source. If there isn't one, it uses the
+/// long title and warns the user.
+pub fn add_short_title(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String) {
+    let short_title;
+    if csl_source.title_short.is_some() {
+        if source_type == &SourceType::Book {
+            short_title = bold(csl_source.title_short.as_ref().unwrap());
+        } else if source_type == &SourceType::Case {
+            short_title = format!("*{}*", &csl_source.title_short.as_ref().unwrap());
+        } else {
+            short_title = slog_scope::scope(
+                &slog_scope::logger().new(o!("fn" => "reverse_italicize()")),
+                || reverse_italicize(csl_source.title_short.as_ref().unwrap()),
+            )
+        }
+    } else {
+        short_title = if source_type == &SourceType::Book {
+            bold(csl_source.title.as_ref().unwrap())
+        } else if source_type == &SourceType::Case {
+            format!("*{}*", csl_source.title.as_ref().unwrap())
+        } else {
+            slog_scope::scope(
+                &slog_scope::logger().new(o!("fn" => "reverse_italicize()")),
+                || reverse_italicize(csl_source.title.as_ref().unwrap()),
+            )
+        };
+        warn!(
+            slog_scope::logger(),
+            "No short title found for {}; using long title for short cites",
+            Color::Blue.paint(&csl_source.id)
+        );
+        eprintln!(
+            "  {} No short title found for {}; using long title for short cites",
+            Color::Yellow.paint("WARN"),
+            Color::Blue.paint(&csl_source.id)
+        )
+    }
+
+    cite.push_str(&short_title);
+}
+
 /// Adds article title italicization markdown to a title with HTML markup.
 ///
 /// This function takes a title with HTML markup for italicization and converts
@@ -183,6 +292,57 @@ pub fn reverse_italicize(title: &str) -> String {
     trace!(slog_scope::logger(), "new_title: {}", new_title);
 
     new_title
+}
+
+/// Add the "in" if it's a book chapter.
+pub fn add_in(cite: &mut String) {
+    cite.push_str(", *in* ");
+}
+
+/// Add the volume to articles, chapters, and manuscripts.
+pub fn add_other_volume(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String) {
+    if source_type == &SourceType::Case
+        || source_type == &SourceType::JournalArticle
+        || source_type == &SourceType::Manuscript
+    {
+        cite.push_str(", ");
+    }
+    cite.push_str(csl_source.volume.as_ref().unwrap());
+    cite.push(' ');
+}
+
+/// The container name (book, journal name, or reporter) for cases, chapters, and articles.
+pub fn add_container_name(
+    csl_source: &CSLSource,
+    source_type: &SourceType,
+    user_journals: &Option<UserJournals>,
+    cite: &mut String,
+) {
+    let container_title;
+    if source_type == &SourceType::Chapter {
+        container_title =
+            slog_scope::scope(&slog_scope::logger().new(o!("fn" => "bold()")), || {
+                bold(csl_source.container_title.as_ref().unwrap())
+            });
+    } else if source_type == &SourceType::Case {
+        container_title = csl_source.container_title.as_ref().unwrap().to_string();
+    } else if csl_source.container_title_short.is_some() {
+        container_title =
+            slog_scope::scope(&slog_scope::logger().new(o!("fn" => "bold()")), || {
+                bold(csl_source.container_title_short.as_ref().unwrap())
+            });
+    } else {
+        let short_journal = slog_scope::scope(
+            &slog_scope::logger().new(o!("fn" => "build_short_journal()")),
+            || build_short_journal(csl_source.container_title.as_ref().unwrap(), user_journals),
+        );
+        container_title =
+            slog_scope::scope(&slog_scope::logger().new(o!("fn" => "bold()")), || {
+                bold(&short_journal)
+            });
+    }
+
+    cite.push_str(&container_title);
 }
 
 /// Returns a (hopefully) short form of a journal name.
@@ -266,6 +426,120 @@ pub fn build_short_journal(long_journal: &str, user_journals: &Option<UserJourna
 
         short_journal.trim().to_string()
     }
+}
+
+/// Add the journal-forthcoming parenthetical.
+///
+/// Used for manuscripts with a note and a date.
+pub fn add_forthcoming(csl_source: &CSLSource, cite: &mut String) {
+    cite.push_str(" (forthcoming ");
+    cite.push_str(
+        &csl_source
+            .issued
+            .as_ref()
+            .unwrap()
+            .date_parts
+            .as_ref()
+            .unwrap()[0][0]
+            .to_string(),
+    );
+    cite.push(')');
+}
+
+/// Add the first page.
+pub fn add_first_page(csl_source: &CSLSource, cite: &mut String) {
+    cite.push(' ');
+    cite.push_str(csl_source.page.as_ref().unwrap());
+}
+
+/// Add the ending parenthetical with court, edition, editors, translators, and year.
+pub fn add_end_parenthetical(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String) {
+    cite.push_str(" (");
+
+    // If it's a case, add the authority.
+    if source_type == &SourceType::Case
+        && csl_source.authority.is_some()
+        && csl_source.authority.as_ref().unwrap() != "U.S. Supreme Court"
+    {
+        cite.push_str(csl_source.authority.as_ref().unwrap());
+        cite.push(' ');
+    }
+
+    // Add the edition.
+    if (source_type == &SourceType::Book || source_type == &SourceType::Chapter)
+        && csl_source.edition.is_some()
+    {
+        cite.push_str(csl_source.edition.as_ref().unwrap());
+        cite.push_str(" ed.");
+
+        // If an editor or translator follows the edition, add a comma.
+        // Otherwise add a space.
+        if csl_source.editor.is_some() || csl_source.translator.is_some() {
+            cite.push_str(", ");
+        } else {
+            cite.push(' ');
+        }
+    }
+
+    // Add the editors.
+    if (source_type == &SourceType::Book || source_type == &SourceType::Chapter)
+        && csl_source.editor.is_some()
+    {
+        let editors = slog_scope::scope(
+            &slog_scope::logger().new(o!("fn" => "build_long_author")),
+            || build_long_author(csl_source.editor.as_ref().unwrap()),
+        );
+        cite.push_str(&editors);
+        if csl_source.editor.as_ref().unwrap().len() > 1 {
+            cite.push_str(" eds., ");
+        } else {
+            cite.push_str(" ed., ");
+        }
+    }
+
+    // Add the translators.
+    if (source_type == &SourceType::Book || source_type == &SourceType::Chapter)
+        && csl_source.translator.is_some()
+    {
+        let translators = slog_scope::scope(
+            &slog_scope::logger().new(o!("fn" => "build_long_author")),
+            || build_long_author(csl_source.translator.as_ref().unwrap()),
+        );
+        cite.push_str(&translators);
+        cite.push_str(" trans., ");
+    }
+
+    // Add the year.
+    if csl_source.issued.as_ref().unwrap().date_parts.is_some() {
+        cite.push_str(
+            &csl_source
+                .issued
+                .as_ref()
+                .unwrap()
+                .date_parts
+                .as_ref()
+                .unwrap()[0][0]
+                .to_string(),
+        );
+    }
+
+    // Close the parentheses
+    cite.push(')');
+}
+
+/// Add the "hereinafter" to sources that need it.
+pub fn add_hereinafter(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String) {
+    cite.push_str(" [hereinafter ");
+    add_short_author(csl_source, source_type, cite);
+    cite.push_str(", ");
+    add_short_title(csl_source, source_type, cite);
+    cite.push(']');
+}
+
+/// Add the url.
+pub fn add_url(csl_source: &CSLSource, cite: &mut String) {
+    cite.push_str(", ");
+    cite.push_str(csl_source.url.as_ref().unwrap());
 }
 
 /// Adds markdown bolding to a string.
