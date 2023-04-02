@@ -61,13 +61,9 @@ pub fn build_case_long(
 
     citetools::add_title(csl_source, source_type, &mut long_cite_pre_pin);
 
-    println!("{long_cite_pre_pin}");
-
     if csl_source.volume.is_some() {
         citetools::add_other_volume(csl_source, source_type, &mut long_cite_pre_pin);
     }
-
-    println!("{long_cite_pre_pin}");
 
     if csl_source.container_title.is_some() {
         citetools::add_container_name(

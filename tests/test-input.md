@@ -71,3 +71,16 @@ This sentence cites to a case.^[[@PlaintiffDefendant1996] at 10.]
 This sentence cites to another case.^[*See* [@PlaintiffDefendant1997] at 85.]
 This sentence cites a case again, and should be in short form.^[[@PlaintiffDefendant1996] at 11.]
 This sentence cites a case again, and should be in short form.^[[@PlaintiffDefendant1997] at 78.]
+
+## Long & Short Forms
+
+This sentence cites to a case.^[[@PlaintiffDefendant1998]; [@PlaintiffDefendant1999].]
+An intervening footnote.^[Nothing of interest.]
+An intervening footnote.^[Nothing of interest.]
+An intervening footnote.^[Nothing of interest.]
+An intervening footnote.^[Nothing of interest.]
+This sentence should have a short cite.^[[@PlaintiffDefendant1998] at 10.]
+This sentence should have a long cite.^[[@PlaintiffDefendant1999] at 10.]
+
+This sentence should have a long cite.^[[@PlaintiffDefendant1996] at 10.]
+This sentence should have a short cite.^[[@PlaintiffDefendant1999] at 10.]

@@ -71,3 +71,16 @@ This sentence cites to a case.^[Plaintiff F v. Defendant F, 600 F.3d 6, 10 (6th 
 This sentence cites to another case.^[*See*  Plaintiff G v. Defendant G, 77 F.3d 77, 85 (7th Cir. 1997).]
 This sentence cites a case again, and should be in short form.^[*Plaintiff F*, 600 F.3d at 11.]
 This sentence cites a case again, and should be in short form.^[*Plaintiff G*, 77 F.3d at 78.]
+
+## Long & Short Forms
+
+This sentence cites to a case.^[Plaintiff H v. Defendant H, 888 F.3d 8 (8th Cir. 1998); Plaintiff I v. Defendant I, 9 F.3d 9 (9th Cir. 1999).]
+An intervening footnote.^[Nothing of interest.]
+An intervening footnote.^[Nothing of interest.]
+An intervening footnote.^[Nothing of interest.]
+An intervening footnote.^[Nothing of interest.]
+This sentence should have a short cite.^[*Plaintiff H*, 888 F.3d at 10.]
+This sentence should have a long cite.^[Plaintiff I v. Defendant I, 9 F.3d 9, 10 (9th Cir. 1999).]
+
+This sentence should have a long cite.^[Plaintiff F v. Defendant F, 600 F.3d 6, 10 (6th Cir. 1996).]
+This sentence should have a short cite.^[*Plaintiff I*, 9 F.3d at 10.]

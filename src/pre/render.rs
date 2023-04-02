@@ -87,8 +87,29 @@ fn render_branch(
             if source_map[citation.reference].source_type == SourceType::Case {
                 // Case citation.
 
-                // Determine if this is the first footnote.
-                if *current_footnote == source_map[citation.reference].all_footnotes[0] {
+                // Determine if this is the first footnote OR if the case has been cited in the last 4 footnotes.
+                let current_footnote_local = *current_footnote;
+
+                // Has the case been cited in the last five footnotes?
+                let last_five = source_map[citation.reference]
+                    .all_footnotes
+                    .contains(&(current_footnote_local - 1))
+                    || source_map[citation.reference]
+                        .all_footnotes
+                        .contains(&(current_footnote_local - 2))
+                    || source_map[citation.reference]
+                        .all_footnotes
+                        .contains(&(current_footnote_local - 3))
+                    || source_map[citation.reference]
+                        .all_footnotes
+                        .contains(&(current_footnote_local - 4))
+                    || source_map[citation.reference]
+                        .all_footnotes
+                        .contains(&(current_footnote_local - 5));
+
+                if current_footnote_local == source_map[citation.reference].all_footnotes[0]
+                    || !last_five
+                {
                     // Long form.
                     if citation.pincite.is_some() {
                         contents.push_str(
