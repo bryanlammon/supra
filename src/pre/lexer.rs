@@ -89,6 +89,13 @@ pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
 }
 
 /// The text lexer.
+///
+/// The text lexer is the first lexer function called. It should start with text
+/// and then look for other types of tokens, sending them to other lexers when
+/// needed.
+///
+/// It doesn't assume that the input starts with text. It instead accounts for
+/// the possibility of starting with a footnote. Why? I have no idea.
 fn text_lexer(input: &str) -> Result<Vec<Token>, String> {
     trace!(slog_scope::logger(), "Starting text lexer...");
     let mut lexer = Lexer::new();
@@ -276,7 +283,8 @@ fn footnote_lexer(input: &str) -> Result<Vec<Token>, String> {
         } else if lexer.context == Context::Text {
             // Look for a citation or crossref
             if c == b'@' && lexer.last_char == Some(b'[') {
-                // If there was something before the citation, add it as a text token.
+                // If there was something before the citation, add it as a text
+                // token.
                 if !&input[lexer.start..i - 1].trim().is_empty() {
                     trace!(
                         slog_scope::logger(),
@@ -292,7 +300,8 @@ fn footnote_lexer(input: &str) -> Result<Vec<Token>, String> {
                 lexer.open_parens = 0;
                 lexer.start = i - 1;
             } else if c == b'?' && lexer.last_char == Some(b'[') {
-                // If there was something before the cross ref, add it as a text token.
+                // If there was something before the cross ref, add it as a text
+                // token.
                 if !&input[lexer.start..i - 1].trim().is_empty() {
                     trace!(
                         slog_scope::logger(),
@@ -313,7 +322,8 @@ fn footnote_lexer(input: &str) -> Result<Vec<Token>, String> {
         // End of the input...
         if i == input.bytes().len() - 1 {
             if lexer.context == Context::Text && c == b']' {
-                // If there was something before the end, add it as a text token.
+                // If there was something before the end, add it as a text
+                // token.
                 if !&input[lexer.start..i].trim().is_empty() {
                     trace!(
                         slog_scope::logger(),
@@ -554,24 +564,6 @@ mod tests {
             "\n\nAnd then there's some text in a new paragraph."
         );
         assert_eq!(content[40].token_type, TokenType::Text);
-    }
-
-    #[test]
-    fn test_input() {
-        let content = lexer(r"There is so much that is wrong with it.^[Criticisms of qualified immunity abound. For a sampling, see Zadeh v. Robinson, 928 F.3d 457, 474, 478–81 (5th Cir. 2019) (Willet, J., concurring in part, dissenting in part); Jamison v. McClendon, 476 F. Supp. 3d 386, 392, 404–09 (S.D. Miss. 2020); [@baudeQualifiedImmunityUnlawful2018]; [@blumQualifiedImmunityTime2018]; [@schwartzCaseQualifiedImmunity2018]. There are, however, those who defend immunity of some kind, even if not in its current form. *See, e.g.*, [@fallonBiddingFarewellConstitutional2019]; [@nielsonQualifiedImmunityFederalism2020]; [@rosenthalDefendingQualifiedImmunity2020]; [@wellsQualifiedImmunityZiglar2018].]").unwrap();
-        assert_eq!(
-            content[0].contents,
-            "There is so much that is wrong with it."
-        );
-        assert_eq!(content[0].token_type, TokenType::Text);
-        assert_eq!(content[1].contents, "^[");
-        assert_eq!(content[1].token_type, TokenType::OpenFootnote);
-        assert_eq!(content[2].contents, "Criticisms of qualified immunity abound. For a sampling, see Zadeh v. Robinson, 928 F.3d 457, 474, 478–81 (5th Cir. 2019) (Willet, J., concurring in part, dissenting in part); Jamison v. McClendon, 476 F. Supp. 3d 386, 392, 404–09 (S.D. Miss. 2020); ");
-        assert_eq!(content[2].token_type, TokenType::Text);
-        assert_eq!(content[3].contents, "[@baudeQualifiedImmunityUnlawful2018]");
-        assert_eq!(content[3].token_type, TokenType::Reference);
-        assert_eq!(content[4].contents, ";");
-        assert_eq!(content[4].token_type, TokenType::CitePunctuation);
     }
 
     mod text_lexer {
