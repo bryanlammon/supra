@@ -37,6 +37,7 @@ enum Context {
     Pincite,
     Parenthetical,
     Punctuation,
+    CiteBreak,
     None,
 }
 
@@ -69,6 +70,7 @@ pub enum TokenType {
     Parenthetical,
     CitePunctuation,
     CrossRef,
+    CiteBreak,
     CloseFootnote,
 }
 
@@ -233,6 +235,17 @@ fn footnote_lexer(input: &str) -> Result<Vec<Token>, String> {
             lex.push(Token::new(TokenType::Id, &input[lexer.start..i + 1]));
             lexer.context = Context::Text;
             lexer.start = i + 1;
+        } else if lexer.context == Context::CiteBreak && c == b']' {
+            // Found the end of the cite break.
+            trace!(
+                slog_scope::logger(),
+                "End of input; pushing token type {:?} containing {:?}",
+                TokenType::CiteBreak,
+                &input[lexer.start..i + 1]
+            );
+            lex.push(Token::new(TokenType::CiteBreak, &input[lexer.start..i + 1]));
+            lexer.context = Context::Text;
+            lexer.start = i + 1;
         } else if lexer.context == Context::Citation {
             // Look for the puncuation that ends the citation
             if (c == b' ' || c == b']')
@@ -281,7 +294,7 @@ fn footnote_lexer(input: &str) -> Result<Vec<Token>, String> {
             lexer.context = Context::Text;
             lexer.start = i + 1;
         } else if lexer.context == Context::Text {
-            // Look for a citation or crossref
+            // Look for a citation, crossref, or cite break.
             if c == b'@' && lexer.last_char == Some(b'[') {
                 // If there was something before the citation, add it as a text
                 // token.
@@ -316,6 +329,23 @@ fn footnote_lexer(input: &str) -> Result<Vec<Token>, String> {
                 lexer.open_brackets = 1; // Expect a closing bracket for the crossref
                 lexer.open_parens = 0;
                 lexer.start = i - 1;
+            } else if c == b'$' && lexer.last_char == Some(b'[') {
+                // If there was something before the cross ref, add it as a text
+                // token.
+                if !&input[lexer.start..i - 1].trim().is_empty() {
+                    trace!(
+                        slog_scope::logger(),
+                        "Pushing token type {:?} containing {:?}",
+                        TokenType::Text,
+                        &input[lexer.start..i - 1]
+                    );
+                    lex.push(Token::new(TokenType::Text, &input[lexer.start..i - 1]));
+
+                    lexer.context = Context::CiteBreak;
+                    lexer.open_brackets = 1; // Expect a closing bracket for the cite break
+                    lexer.open_parens = 0;
+                    lexer.start = i - 1;
+                }
             }
         }
 
@@ -738,7 +768,7 @@ mod tests {
 
         #[test]
         fn complex_footnote() {
-            let footnote = footnote_lexer(r"^[[?complex_id] [@jones2021] at 100 (explaining complicated stuff). This footnote is a bit complicated. *See, e.g.*, [@smith2020] at 10–12 (super-complicated discussion); [@johnson2019] at 500, 550 n.5 (similarly complicated discussion). Here's some more text. Not to mention another citation. *Cf.* [@Baker1900]. For a further discussion, see *supra* notes [?crossref1]–[?crossref2].]").unwrap();
+            let footnote = footnote_lexer(r"^[[?complex_id] [@jones2021] at 100 (explaining complicated stuff). This footnote is a bit complicated. *See, e.g.*, [@smith2020] at 10--12 (super-complicated discussion); [@johnson2019] at 500, 550 n.5 (similarly complicated discussion). Here's some more text. Not to mention another citation. *Cf.* [@Baker1900]. For a further discussion, see *supra* notes [?crossref1]--[?crossref2].]").unwrap();
 
             assert_eq!(footnote.len(), 22);
             assert_eq!(footnote[0].contents, r"[?complex_id]");
@@ -758,7 +788,7 @@ mod tests {
             assert_eq!(footnote[5].token_type, TokenType::Text);
             assert_eq!(footnote[6].contents, r"[@smith2020]");
             assert_eq!(footnote[6].token_type, TokenType::Reference);
-            assert_eq!(footnote[7].contents, r" at 10–12");
+            assert_eq!(footnote[7].contents, r" at 10--12");
             assert_eq!(footnote[7].token_type, TokenType::Pincite);
             assert_eq!(footnote[8].contents, r"(super-complicated discussion)");
             assert_eq!(footnote[8].token_type, TokenType::Parenthetical);
@@ -788,12 +818,36 @@ mod tests {
             assert_eq!(footnote[17].token_type, TokenType::Text);
             assert_eq!(footnote[18].contents, r"[?crossref1]");
             assert_eq!(footnote[18].token_type, TokenType::CrossRef);
-            assert_eq!(footnote[19].contents, r"–");
+            assert_eq!(footnote[19].contents, r"--");
             assert_eq!(footnote[19].token_type, TokenType::Text);
             assert_eq!(footnote[20].contents, r"[?crossref2]");
             assert_eq!(footnote[20].token_type, TokenType::CrossRef);
             assert_eq!(footnote[21].contents, r".");
             assert_eq!(footnote[21].token_type, TokenType::Text);
+        }
+
+        #[test]
+        fn cite_breaker() {
+            let footnote =
+                footnote_lexer(r"^[This is a footnote with a cite breaker. *See* [$] Article Not in the Library at 1; [@jones2021] at 100 (discussing stuff).]").unwrap();
+            assert_eq!(footnote.len(), 7);
+            assert_eq!(
+                footnote[0].contents,
+                r"This is a footnote with a cite breaker. *See* "
+            );
+            assert_eq!(footnote[0].token_type, TokenType::Text);
+            assert_eq!(footnote[1].contents, r"[$]");
+            assert_eq!(footnote[1].token_type, TokenType::CiteBreak);
+            assert_eq!(footnote[2].contents, r" Article Not in the Library at 1; ");
+            assert_eq!(footnote[2].token_type, TokenType::Text);
+            assert_eq!(footnote[3].contents, r"[@jones2021]");
+            assert_eq!(footnote[3].token_type, TokenType::Reference);
+            assert_eq!(footnote[4].contents, r" at 100");
+            assert_eq!(footnote[4].token_type, TokenType::Pincite);
+            assert_eq!(footnote[5].contents, r"(discussing stuff)");
+            assert_eq!(footnote[5].token_type, TokenType::Parenthetical);
+            assert_eq!(footnote[6].contents, r".");
+            assert_eq!(footnote[6].token_type, TokenType::CitePunctuation);
         }
     }
 
@@ -879,28 +933,28 @@ mod tests {
         #[test]
         fn pin_variety() {
             let citation1 = cite_lexer(r"[@jones2021] at §\ 100.3[D](2);").unwrap();
-            let citation2 = cite_lexer(r"[@jones2021] at 100–01;").unwrap();
+            let citation2 = cite_lexer(r"[@jones2021] at 100--01;").unwrap();
             let citation3 = cite_lexer(r"[@jones2021] at 100, 200;").unwrap();
             let citation4 = cite_lexer(r"[@jones2021] at 100 n.1;").unwrap();
-            let citation5 = cite_lexer(r"[@jones2021] at 100 nn.1–45;").unwrap();
+            let citation5 = cite_lexer(r"[@jones2021] at 100 nn.1--45;").unwrap();
             let citation6 =
                 cite_lexer(r"[@johnson2019] at 500, 550 n.5 (parenthetical after the pincite).")
                     .unwrap();
-            let citation7 = cite_lexer(r"[@jones2021] 100–01;").unwrap();
+            let citation7 = cite_lexer(r"[@jones2021] 100--01;").unwrap();
 
             assert_eq!(citation1[1].contents, r" at §\ 100.3[D](2)");
             assert_eq!(citation1[1].token_type, TokenType::Pincite);
-            assert_eq!(citation2[1].contents, r" at 100–01");
+            assert_eq!(citation2[1].contents, r" at 100--01");
             assert_eq!(citation2[1].token_type, TokenType::Pincite);
             assert_eq!(citation3[1].contents, r" at 100, 200");
             assert_eq!(citation3[1].token_type, TokenType::Pincite);
             assert_eq!(citation4[1].contents, r" at 100 n.1");
             assert_eq!(citation4[1].token_type, TokenType::Pincite);
-            assert_eq!(citation5[1].contents, r" at 100 nn.1–45");
+            assert_eq!(citation5[1].contents, r" at 100 nn.1--45");
             assert_eq!(citation5[1].token_type, TokenType::Pincite);
             assert_eq!(citation6[1].contents, r" at 500, 550 n.5");
             assert_eq!(citation6[1].token_type, TokenType::Pincite);
-            assert_eq!(citation7[1].contents, r" 100–01");
+            assert_eq!(citation7[1].contents, r" 100--01");
             assert_eq!(citation7[1].token_type, TokenType::Pincite);
         }
     }
