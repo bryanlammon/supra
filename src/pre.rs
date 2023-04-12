@@ -1,5 +1,6 @@
 //! The Supra pre-processor.
 
+mod citetrack;
 mod crossref;
 mod csljson;
 mod lexer;

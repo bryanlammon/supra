@@ -11,6 +11,7 @@ pub enum Branch<'a> {
     Footnote(Footnote<'a>),
     Citation(Citation<'a>),
     CrossRef(CrossRef<'a>),
+    CiteBreak,
 }
 
 impl Branch<'_> {
@@ -31,6 +32,7 @@ impl Branch<'_> {
                 citation.reference, citation.pincite, citation.parenthetical, citation.punctuation
             ),
             Branch::CrossRef(crossref) => crossref.contents.to_string(),
+            Branch::CiteBreak => "".to_string(),
         }
     }
 }
@@ -101,6 +103,10 @@ impl CrossRef<'_> {
         CrossRef { contents }
     }
 }
+
+/// A cite breaker.
+#[derive(Debug, PartialEq, Eq)]
+pub struct CiteBraker;
 
 /// The main parser.
 pub fn parser<'a>(tokens: &[Token<'a>], offset: i32) -> Result<Vec<Branch<'a>>, String> {
@@ -215,6 +221,14 @@ fn footnote_parser<'a>(tokens: &[Token<'a>], footnote_number: i32) -> Result<Foo
                 );
                 contents.push(Branch::CrossRef(CrossRef::new(token.contents)));
             }
+            TokenType::CiteBreak => {
+                trace!(
+                    slog_scope::logger(),
+                    "Pushing branch type CiteBreak containing {:?}",
+                    token.contents
+                );
+                contents.push(Branch::CiteBreak);
+            }
             _ => {}
         }
     }
@@ -291,9 +305,17 @@ mod tests {
                     token_type: TokenType::CitePunctuation,
                     contents: ".",
                 },
+                //Token {
+                //    token_type: TokenType::Text,
+                //    contents: " This footnote is a bit complicated. *See, e.g.*, ",
+                //},
                 Token {
                     token_type: TokenType::Text,
-                    contents: " This footnote is a bit complicated. *See, e.g.*, ",
+                    contents: " This footnote is a bit complicated. *See, e.g.*, Source not in the library; ",
+                },
+                Token {
+                    token_type: TokenType::CiteBreak,
+                    contents: "[$]"
                 },
                 Token {
                     token_type: TokenType::Reference,
@@ -301,7 +323,7 @@ mod tests {
                 },
                 Token {
                     token_type: TokenType::Pincite,
-                    contents: " at 10–12",
+                    contents: " at 10--12",
                 },
                 Token {
                     token_type: TokenType::Parenthetical,
@@ -349,7 +371,7 @@ mod tests {
                 },
                 Token {
                     token_type: TokenType::Text,
-                    contents: "–",
+                    contents: "--",
                 },
                 Token {
                     token_type: TokenType::CrossRef,
@@ -362,52 +384,42 @@ mod tests {
             ];
             let footnote = footnote_parser(&footnote_tokens, 1).unwrap();
 
-            assert_eq!(footnote.contents.len(), 11);
+            assert_eq!(footnote.contents.len(), 12);
             assert_eq!(footnote.number, 1);
             assert_eq!(footnote.id, Some("[?complex_id]"));
             assert_eq!(
                 footnote.contents[0].print_contents(),
                 r#"[@jones2021] Some("100") Some("(explaining complicated stuff)") ."#
             );
-            //assert_eq!(&*footnote.contents[0].render_type(), "Citation");
             assert_eq!(
                 footnote.contents[1].print_contents(),
-                " This footnote is a bit complicated. *See, e.g.*, "
+                " This footnote is a bit complicated. *See, e.g.*, Source not in the library; "
             );
-            //assert_eq!(&*footnote.contents[1].render_type(), "Text");
-            assert_eq!(
-                footnote.contents[2].print_contents(),
-                r#"[@smith2020] Some("10–12") Some("(super-complicated discussion)") ;"#
-            );
-            //assert_eq!(&*footnote.contents[2].render_type(), "Citation");
+            assert_eq!(footnote.contents[2].print_contents(), r#""#);
             assert_eq!(
                 footnote.contents[3].print_contents(),
-                r#"[@johnson2019] Some("500, 550 n.5") Some("(similarly complicated discussion)") ."#
+                r#"[@smith2020] Some("10--12") Some("(super-complicated discussion)") ;"#
             );
-            //assert_eq!(&*footnote.contents[3].render_type(), "Citation");
             assert_eq!(
                 footnote.contents[4].print_contents(),
-                " Here's some more text. Not to mention another citation. *Cf.* "
+                r#"[@johnson2019] Some("500, 550 n.5") Some("(similarly complicated discussion)") ."#
             );
-            //assert_eq!(&*footnote.contents[4].render_type(), "Text");
             assert_eq!(
                 footnote.contents[5].print_contents(),
-                "[@Baker1900] None None ."
+                " Here's some more text. Not to mention another citation. *Cf.* "
             );
-            //assert_eq!(&*footnote.contents[5].render_type(), "Citation");
             assert_eq!(
                 footnote.contents[6].print_contents(),
+                "[@Baker1900] None None ."
+            );
+            assert_eq!(
+                footnote.contents[7].print_contents(),
                 " For a further discussion, see *supra* notes "
             );
-            //assert_eq!(&*footnote.contents[6].render_type(), "Text");
-            assert_eq!(footnote.contents[7].print_contents(), "[?crossref1]");
-            //assert_eq!(&*footnote.contents[7].render_type(), "CrossRef");
-            assert_eq!(footnote.contents[8].print_contents(), "–");
-            //assert_eq!(&*footnote.contents[8].render_type(), "Text");
-            assert_eq!(footnote.contents[9].print_contents(), "[?crossref2]");
-            //assert_eq!(&*footnote.contents[9].render_type(), "CrossRef");
-            assert_eq!(footnote.contents[10].print_contents(), ".");
-            //assert_eq!(&*footnote.contents[10].render_type(), "Text");
+            assert_eq!(footnote.contents[8].print_contents(), "[?crossref1]");
+            assert_eq!(footnote.contents[9].print_contents(), "--");
+            assert_eq!(footnote.contents[10].print_contents(), "[?crossref2]");
+            assert_eq!(footnote.contents[11].print_contents(), ".");
         }
     }
 
@@ -470,20 +482,20 @@ mod tests {
         fn pin_variety() {
             let pin0 = pin_parser(" ");
             let pin1 = pin_parser(r" at §\ 100.3[D](2)");
-            let pin2 = pin_parser(r" at 100–01");
+            let pin2 = pin_parser(r" at 100--01");
             let pin3 = pin_parser(r" at 100, 200");
             let pin4 = pin_parser(r" at 100 n.1");
-            let pin5 = pin_parser(r" at 100 nn.1–45");
+            let pin5 = pin_parser(r" at 100 nn.1--45");
             let pin6 = pin_parser(r" at 500, 550 n.5");
             let pin7 = pin_parser("");
 
             assert_eq!(pin0, None);
             assert_eq!(pin7, None);
             assert_eq!(pin1, Some(r"§\ 100.3[D](2)"));
-            assert_eq!(pin2, Some("100–01"));
+            assert_eq!(pin2, Some("100--01"));
             assert_eq!(pin3, Some("100, 200"));
             assert_eq!(pin4, Some("100 n.1"));
-            assert_eq!(pin5, Some("100 nn.1–45"));
+            assert_eq!(pin5, Some("100 nn.1--45"));
             assert_eq!(pin6, Some("500, 550 n.5"));
         }
     }

@@ -163,5 +163,8 @@ fn render_branch(
         }
 
         Branch::CrossRef(crossref) => crossref_map[crossref.contents].to_string(),
+
+        // TODO
+        Branch::CiteBreak => "".to_string(),
     }
 }
