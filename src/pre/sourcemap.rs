@@ -76,17 +76,12 @@ impl Source<'_> {
         cite
     }
 
-    /// Output a short cite.
-    //pub fn short_cite(&self) -> String {
-    //    self.short_cite.as_ref().unwrap().to_string()
-    //}
-
     /// Output a short cite with no pin.
     pub fn short_cite_no_pin(&self) -> String {
         self.short_cite_no_pin.as_ref().unwrap().to_string()
     }
 
-    /// Output a short cite with a pin
+    /// Output a short cite with a pin.
     pub fn short_cite_w_pin(&self, pin: &str) -> String {
         let mut cite = self.short_cite_w_pin.as_ref().unwrap().to_owned();
         if self.source_type == SourceType::Book

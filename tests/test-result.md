@@ -84,3 +84,18 @@ This sentence should have a long cite.^[Plaintiff I v. Defendant I, 9 F.3d 9, 10
 
 This sentence should have a long cite.^[Plaintiff F v. Defendant F, 600 F.3d 6, 10 (6th Cir. 1996).]
 This sentence should have a short cite.^[*Plaintiff I*, 9 F.3d at 10.]
+
+## Ids
+
+This sentence cites to one source.^[Plaintiff J v. Defendant J, 10 F.3d 1000 (10th Cir. 2000).]
+It then cites to it again, which should be an *Id.*.^[*Id.* at 20.]
+Then a new source.^[Plaintiff K v. Defendant K, 111 F.3d 1111, 12 (11th Cir. 2001).]
+And that source again.^[*Id.* at 13.]
+
+This sentence cites to the same source twice in one footnote.^[Here's some text. *See*  *Id.* at 55. Here's some more text that is hopefully followed by an *Id.*. *See*  *Id.* at 55.]
+
+## Citation Break
+
+This sentence cites to a souce.^[Plaintiff H v. Defendant H, 888 F.3d 8 (8th Cir. 1998).]
+This sentence cites to a source not in the library, so it needs a cite breaker.^[A Souce that Isn't in the Library at 12.]
+So this sentence should have a short cite, not an *Id.*^[*Plaintiff H*, 888 F.3d 8.]

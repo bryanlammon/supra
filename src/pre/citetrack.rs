@@ -6,7 +6,8 @@ use crate::pre::parser::Branch;
 use slog::debug;
 use std::collections::HashMap;
 
-pub fn build_cite_tracker<'a>(tree: &'a [Branch]) -> HashMap<&'a str, i32> {
+#[allow(dead_code)]
+pub fn build_cite_tracker<'a>(_tree: &'a [Branch]) -> HashMap<&'a str, i32> {
     debug!(slog_scope::logger(), "Beginning cite tracker...");
 
     todo!()

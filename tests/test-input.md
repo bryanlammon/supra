@@ -84,3 +84,18 @@ This sentence should have a long cite.^[[@PlaintiffDefendant1999] at 10.]
 
 This sentence should have a long cite.^[[@PlaintiffDefendant1996] at 10.]
 This sentence should have a short cite.^[[@PlaintiffDefendant1999] at 10.]
+
+## Ids
+
+This sentence cites to one source.^[[@PlaintiffDefendant2000].]
+It then cites to it again, which should be an *Id.*.^[[@PlaintiffDefendant2000] at 20.]
+Then a new source.^[[@PlaintiffDefendant2001] at 12.]
+And that source again.^[[@PlaintiffDefendant2001] at 13.]
+
+This sentence cites to the same source twice in one footnote.^[Here's some text. *See* [@PlaintiffDefendant2001] at 55. Here's some more text that is hopefully followed by an *Id.*. *See* [@PlaintiffDefendant2001] at 55.]
+
+## Citation Break
+
+This sentence cites to a souce.^[[@PlaintiffDefendant1998].]
+This sentence cites to a source not in the library, so it needs a cite breaker.^[A Souce that Isn't in the Library at 12.[$]]
+So this sentence should have a short cite, not an *Id.*^[[@PlaintiffDefendant1998].]

@@ -7,6 +7,12 @@ use crate::pre::{
 use slog::{debug, trace};
 use std::collections::HashMap;
 
+/// For tracking the last citation.
+struct LastCitation {
+    footnote: i32,
+    source: Option<String>,
+}
+
 /// The main render function.
 ///
 /// Iterates through the branches and sends each to the [`render_branch`]
@@ -26,6 +32,10 @@ pub fn render(
 
     // Track the footnotes and cites.
     let mut current_footnote = 0;
+    let mut last_citation = LastCitation {
+        footnote: current_footnote,
+        source: None,
+    };
 
     for branch in tree {
         output.push_str(&render_branch(
@@ -33,6 +43,7 @@ pub fn render(
             source_map,
             crossref_map,
             &mut current_footnote,
+            &mut last_citation,
         ));
     }
 
@@ -50,6 +61,7 @@ fn render_branch(
     source_map: &mut SourceMap,
     crossref_map: &HashMap<&str, i32>,
     current_footnote: &mut i32,
+    last_citation: &mut LastCitation,
 ) -> String {
     trace!(slog_scope::logger(), "Rendering branch...");
 
@@ -71,6 +83,7 @@ fn render_branch(
                     source_map,
                     crossref_map,
                     current_footnote,
+                    last_citation,
                 ));
             }
             format!("^[{}]", contents.trim())
@@ -84,7 +97,18 @@ fn render_branch(
             // need to know how far back the last cite was. It's probably best
             // to start counting the footnotes, which might make `Id.`s easier.
 
-            if source_map[citation.reference].source_type == SourceType::Case {
+            if last_citation.source.is_some()
+                && &source_map[citation.reference].id == last_citation.source.as_ref().unwrap()
+            {
+                // It's an *Id.*
+                contents.push_str("*Id.*");
+
+                // Add a pin, if any.
+                if citation.pincite.is_some() {
+                    contents.push_str(" at ");
+                    contents.push_str(citation.pincite.as_ref().unwrap());
+                }
+            } else if source_map[citation.reference].source_type == SourceType::Case {
                 // Case citation.
 
                 // Determine if this is the first footnote OR if the case has been cited in the last 4 footnotes.
@@ -107,6 +131,7 @@ fn render_branch(
                         .all_footnotes
                         .contains(&(current_footnote_local - 5));
 
+                // Or is it the first time its cited?
                 if current_footnote_local == source_map[citation.reference].all_footnotes[0]
                     || !last_five
                 {
@@ -159,12 +184,20 @@ fn render_branch(
             }
             contents.push_str(citation.punctuation);
 
+            // Update the last citation
+
+            // Whether it was part of a string can be checked using the last citation's punctuation.
+            last_citation.footnote = *current_footnote;
+            last_citation.source = Some(source_map[citation.reference].id.clone());
+
             contents
         }
 
         Branch::CrossRef(crossref) => crossref_map[crossref.contents].to_string(),
 
-        // TODO
-        Branch::CiteBreak => "".to_string(),
+        Branch::CiteBreak => {
+            last_citation.source = None;
+            "".to_string()
+        }
     }
 }
