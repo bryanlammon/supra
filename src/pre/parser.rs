@@ -184,7 +184,7 @@ fn footnote_parser<'a>(tokens: &[Token<'a>], footnote_number: i32) -> Result<Foo
 
     for (i, token) in tokens.iter().enumerate() {
         match token.token_type {
-            TokenType::Id => {
+            TokenType::ID => {
                 trace!(slog_scope::logger(), "Adding id: {:?}", token.contents);
                 id = Some(token.contents);
             }
@@ -286,7 +286,7 @@ mod tests {
         fn complex_footnote() {
             let footnote_tokens = vec![
                 Token {
-                    token_type: TokenType::Id,
+                    token_type: TokenType::ID,
                     contents: "[?complex_id]",
                 },
                 Token {

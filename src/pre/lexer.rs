@@ -30,7 +30,7 @@ impl Lexer {
 enum Context {
     Text,
     Footnote,
-    Id,
+    ID,
     Citation,
     CrossRef,
     Reference,
@@ -64,7 +64,7 @@ impl Token<'_> {
 pub enum TokenType {
     Text,
     OpenFootnote,
-    Id,
+    ID,
     Reference,
     Pincite,
     Parenthetical,
@@ -210,7 +210,7 @@ fn footnote_lexer(input: &str) -> Result<Vec<Token>, String> {
 
     // Determine the starting block. It could be an ID, a citation, or text.
     if input.as_bytes().get(2) == Some(&b'[') && input.as_bytes().get(3) == Some(&b'?') {
-        lexer.context = Context::Id;
+        lexer.context = Context::ID;
     } else if input.as_bytes().get(2) == Some(&b'[') && input.as_bytes().get(3) == Some(&b'@') {
         lexer.context = Context::Citation;
         // The number of open brackets needs to account for the opening footnote
@@ -224,15 +224,15 @@ fn footnote_lexer(input: &str) -> Result<Vec<Token>, String> {
     lexer.start = 2;
 
     for (i, c) in input.bytes().enumerate() {
-        if lexer.context == Context::Id && c == b']' {
+        if lexer.context == Context::ID && c == b']' {
             // Found the end of an ID
             trace!(
                 slog_scope::logger(),
                 "End of input; pushing token type {:?} containing {:?}",
-                TokenType::Id,
+                TokenType::ID,
                 &input[lexer.start..i + 1]
             );
-            lex.push(Token::new(TokenType::Id, &input[lexer.start..i + 1]));
+            lex.push(Token::new(TokenType::ID, &input[lexer.start..i + 1]));
             lexer.context = Context::Text;
             lexer.start = i + 1;
         } else if lexer.context == Context::CiteBreak && c == b']' {
@@ -494,7 +494,7 @@ mod tests {
         assert_eq!(content[1].contents, "^[");
         assert_eq!(content[1].token_type, TokenType::OpenFootnote);
         assert_eq!(content[2].contents, "[?1]");
-        assert_eq!(content[2].token_type, TokenType::Id);
+        assert_eq!(content[2].token_type, TokenType::ID);
         assert_eq!(content[3].contents, " For more on complex strings, see ");
         assert_eq!(content[3].token_type, TokenType::Text);
         assert_eq!(content[4].contents, "[@jones2021]");
@@ -514,7 +514,7 @@ mod tests {
         assert_eq!(content[10].contents, "^[");
         assert_eq!(content[10].token_type, TokenType::OpenFootnote);
         assert_eq!(content[11].contents, "[?2]");
-        assert_eq!(content[11].token_type, TokenType::Id);
+        assert_eq!(content[11].token_type, TokenType::ID);
         assert_eq!(
             content[12].contents,
             " This is a midsentence footnote. But it doesn't have any citations."
@@ -547,7 +547,7 @@ mod tests {
         assert_eq!(content[21].contents, "^[");
         assert_eq!(content[21].token_type, TokenType::OpenFootnote);
         assert_eq!(content[22].contents, "[?lotsa_citations]");
-        assert_eq!(content[22].token_type, TokenType::Id);
+        assert_eq!(content[22].token_type, TokenType::ID);
         assert_eq!(content[23].contents, " Like this one, which cites to ");
         assert_eq!(content[23].token_type, TokenType::Text);
         assert_eq!(content[24].contents, "[@smith2021]");
@@ -714,7 +714,7 @@ mod tests {
             let footnote = footnote_lexer(r"^[[?id] This is a footnote with an ID.]").unwrap();
             assert_eq!(footnote.len(), 2);
             assert_eq!(footnote[0].contents, r"[?id]");
-            assert_eq!(footnote[0].token_type, TokenType::Id);
+            assert_eq!(footnote[0].token_type, TokenType::ID);
             assert_eq!(footnote[1].contents, r" This is a footnote with an ID.");
             assert_eq!(footnote[1].token_type, TokenType::Text);
         }
@@ -772,7 +772,7 @@ mod tests {
 
             assert_eq!(footnote.len(), 22);
             assert_eq!(footnote[0].contents, r"[?complex_id]");
-            assert_eq!(footnote[0].token_type, TokenType::Id);
+            assert_eq!(footnote[0].token_type, TokenType::ID);
             assert_eq!(footnote[1].contents, r"[@jones2021]");
             assert_eq!(footnote[1].token_type, TokenType::Reference);
             assert_eq!(footnote[2].contents, r" at 100");
