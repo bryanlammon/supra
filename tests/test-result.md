@@ -51,30 +51,30 @@ This sentence cites to the journal article in footnote twelve (no pincite).^[Gau
 ## Full forms, w/o pincites
 
 This sentence cites to a case.^[Doe v. State, 123 F.4th 456 (7th Cir. 2022).]
-This sentence cites to two cases.^[*See*  Johnson v. Smith, 123 U.S. 456 (2023); United States v. Jones, 867 F.4th 5309 (1st Cir. 2022).]
+This sentence cites to two cases.^[Johnson v. Smith, 123 U.S. 456 (2023);  United States v. Jones, 867 F.4th 5309 (1st Cir. 2022).]
 
 ## Full forms, w/ pincites
 
-This cites to a case, but it should use the case's short form.^[*But see*  Plaintiff A v. Defendant A, 100 F.3d 1, 10 (1st Cir. 1991).]
-This cites to two cases, but it should use their short form.^[*See*  Plaintiff B v. Defendant B, 2 F.3d 200, 205 (2d Cir. 1992); Plaintiff C v. Defendant C, 333 F.3d 33, 33 (3d Cir. 1993).]
+This cites to a case, but it should use the case's short form.^[Plaintiff A v. Defendant A, 100 F.3d 1, 10 (1st Cir. 1991).]
+This cites to two cases, but it should use their short form.^[Plaintiff B v. Defendant B, 2 F.3d 200, 205 (2d Cir. 1992);  Plaintiff C v. Defendant C, 333 F.3d 33, 33 (3d Cir. 1993).]
 
 ## Short forms, w/o pincites
 
 This sentence cites to a case.^[Plaintiff D v. Defendant D, 44 F.3d 444 (4th Cir. 1994).]
-This sentence cites to another case.^[*See*  Plaintiff E v. Defendant E, 5 F.3d 555 (5th Cir. 1995).]
+This sentence cites to another case.^[Plaintiff E v. Defendant E, 5 F.3d 555 (5th Cir. 1995).]
 This sentence cites a case again, and should be in short form.^[*Plaintiff D*, 44 F.3d 444.]
 This sentence cites a case again, and should be in short form.^[*Plaintiff E*, 5 F.3d 555.]
 
 ## Short forms, w/ pincites
 
 This sentence cites to a case.^[Plaintiff F v. Defendant F, 600 F.3d 6, 10 (6th Cir. 1996).]
-This sentence cites to another case.^[*See*  Plaintiff G v. Defendant G, 77 F.3d 77, 85 (7th Cir. 1997).]
+This sentence cites to another case.^[Plaintiff G v. Defendant G, 77 F.3d 77, 85 (7th Cir. 1997).]
 This sentence cites a case again, and should be in short form.^[*Plaintiff F*, 600 F.3d at 11.]
 This sentence cites a case again, and should be in short form.^[*Plaintiff G*, 77 F.3d at 78.]
 
 ## Long & Short Forms
 
-This sentence cites to a case.^[Plaintiff H v. Defendant H, 888 F.3d 8 (8th Cir. 1998); Plaintiff I v. Defendant I, 9 F.3d 9 (9th Cir. 1999).]
+This sentence cites to a case.^[Plaintiff H v. Defendant H, 888 F.3d 8 (8th Cir. 1998);  Plaintiff I v. Defendant I, 9 F.3d 9 (9th Cir. 1999).]
 An intervening footnote.^[Nothing of interest.]
 An intervening footnote.^[Nothing of interest.]
 An intervening footnote.^[Nothing of interest.]
@@ -92,10 +92,10 @@ It then cites to it again, which should be an *Id.*.^[*Id.* at 20.]
 Then a new source.^[Plaintiff K v. Defendant K, 111 F.3d 1111, 12 (11th Cir. 2001).]
 And that source again.^[*Id.* at 13.]
 
-This sentence cites to the same source twice in one footnote.^[Here's some text. *See*  *Id.* at 55. Here's some more text that is hopefully followed by an *Id.*. *See*  *Id.* at 55.]
+This sentence cites to the same source twice in one footnote.^[Here's some text.  *Id.* at 55. Here's some more text that is hopefully followed by an *Id.*.  *Id.* at 55.]
 
 ## Citation Break
 
 This sentence cites to a souce.^[Plaintiff H v. Defendant H, 888 F.3d 8 (8th Cir. 1998).]
-This sentence cites to a source not in the library, so it needs a cite breaker.^[A Souce that Isn't in the Library at 12.]
+This sentence cites to a source not in the library, so it needs a cite breaker.^[A Souce that Isn't in the Library at 12]
 So this sentence should have a short cite, not an *Id.*^[*Plaintiff H*, 888 F.3d 8.]
