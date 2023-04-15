@@ -211,6 +211,7 @@ fn footnote_parser<'a>(tokens: &[Token<'a>], footnote_number: i32) -> Result<Foo
     let mut contents: Vec<Branch> = Vec::new();
     let mut id = None;
     let mut citation_index: usize = 0;
+    let mut citation_started = false;
 
     for (i, token) in tokens.iter().enumerate() {
         match token.token_type {
@@ -218,8 +219,23 @@ fn footnote_parser<'a>(tokens: &[Token<'a>], footnote_number: i32) -> Result<Foo
                 trace!(slog_scope::logger(), "Adding id: {:?}", token.contents);
                 id = Some(token.contents);
             }
+            TokenType::PreCitePunctuation => {
+                if !citation_started {
+                    citation_started = true;
+                    citation_index = i;
+                }
+            }
+            TokenType::Signal => {
+                if !citation_started {
+                    citation_started = true;
+                    citation_index = i;
+                }
+            }
             TokenType::Reference => {
-                citation_index = i;
+                if !citation_started {
+                    citation_started = true;
+                    citation_index = i;
+                };
             }
             TokenType::CitePunctuation => match slog_scope::scope(
                 &slog_scope::logger().new(o!("fn" => "cite_parser()")),
@@ -232,6 +248,7 @@ fn footnote_parser<'a>(tokens: &[Token<'a>], footnote_number: i32) -> Result<Foo
                         c
                     );
                     contents.push(Branch::Citation(c));
+                    citation_started = false;
                 }
                 Err(e) => return Err(e),
             },

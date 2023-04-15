@@ -4,7 +4,7 @@ pub mod config;
 pub mod fs;
 mod pan;
 mod post;
-mod pre;
+pub mod pre;
 
 use crate::config::Output;
 use ansi_term::Color;
