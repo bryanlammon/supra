@@ -70,6 +70,7 @@ impl Footnote<'_> {
 /// Contents of a citation branch.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Citation<'a> {
+    pub pre_cite: Option<PreCite<'a>>,
     pub reference: &'a str,
     pub pincite: Option<&'a str>,
     pub parenthetical: Option<&'a str>,
@@ -78,17 +79,46 @@ pub struct Citation<'a> {
 
 impl Citation<'_> {
     fn new<'b>(
+        pre_cite: Option<PreCite<'b>>,
         reference: &'b str,
         pincite: Option<&'b str>,
         parenthetical: Option<&'b str>,
         punctuation: &'b str,
     ) -> Citation<'b> {
         Citation {
+            pre_cite,
             reference,
             pincite,
             parenthetical,
             punctuation,
         }
+    }
+}
+
+/// The pre-cite data.
+#[derive(Debug, PartialEq, Eq)]
+pub enum PreCite<'a> {
+    Punctuation(Punctuation<'a>),
+    Signal(Signal<'a>),
+}
+
+/// The pre-cite punctuation.
+#[derive(Debug, PartialEq, Eq)]
+pub struct Punctuation<'a>(&'a str);
+
+impl Punctuation<'_> {
+    fn new(punctuation: &'_ str) -> Punctuation<'_> {
+        Punctuation(punctuation)
+    }
+}
+
+/// The pre-cite signal.
+#[derive(Debug, PartialEq, Eq)]
+pub struct Signal<'a>(&'a str);
+
+impl Signal<'_> {
+    fn new(signal: &'_ str) -> Signal<'_> {
+        Signal(signal)
     }
 }
 
@@ -240,10 +270,16 @@ fn footnote_parser<'a>(tokens: &[Token<'a>], footnote_number: i32) -> Result<Foo
 /// Parse the parts of a citation.
 fn cite_parser<'a>(tokens: &[Token<'a>]) -> Result<Citation<'a>, String> {
     trace!(slog_scope::logger(), "Starting citation parser...");
-    let mut citation = Citation::new("", None, None, "");
+    let mut citation = Citation::new(None, "", None, None, "");
 
     for token in tokens {
         match token.token_type {
+            TokenType::PreCitePunctuation => {
+                citation.pre_cite = Some(PreCite::Punctuation(Punctuation::new(token.contents)))
+            }
+            TokenType::Signal => {
+                citation.pre_cite = Some(PreCite::Signal(Signal::new(token.contents)))
+            }
             TokenType::Reference => citation.reference = token.contents,
             TokenType::Pincite => citation.pincite = pin_parser(token.contents),
             TokenType::Parenthetical => citation.parenthetical = Some(token.contents),
