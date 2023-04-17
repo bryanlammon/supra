@@ -190,7 +190,9 @@ pub fn build_short_author(name_vector: &[NameVariable]) -> String {
 /// Add the title.
 ///
 /// If it's a book, also bold it. If it's a chapter, journal, or manuscript,
-/// "reverse italicize" it. If it's a case, let it be (TODO: shorten words in case names).
+/// "reverse italicize" it. If it's a case, italicize `In re` and *ex rel*; otherwise let it be.
+///
+/// TODO: shorten words in case names?
 pub fn add_title(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String) {
     if source_type == &SourceType::Book {
         let title = slog_scope::scope(&slog_scope::logger().new(o!("fn" => "bold()")), || {
@@ -207,8 +209,17 @@ pub fn add_title(csl_source: &CSLSource, source_type: &SourceType, cite: &mut St
         );
         cite.push_str(&title);
     } else if source_type == &SourceType::Case {
-        let title = csl_source.title.as_ref().unwrap();
-        cite.push_str(title);
+        let mut title = csl_source.title.as_ref().unwrap().clone();
+
+        // Italicize any un-italicized `In re`s and `ex rel.`s.
+        if title.contains("In re ") {
+            title = title.replace("In re ", "*In re* ");
+        }
+        if title.contains(" ex rel. ") {
+            title = title.replace(" ex rel. ", " *ex. rel.* ");
+        }
+
+        cite.push_str(&title);
     }
 }
 
