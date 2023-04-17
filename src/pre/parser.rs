@@ -104,21 +104,25 @@ pub enum PreCite<'a> {
 
 /// The pre-cite punctuation.
 #[derive(Debug, PartialEq, Eq)]
-pub struct Punctuation<'a>(&'a str);
+pub struct Punctuation<'a> {
+    pub contents: &'a str,
+}
 
 impl Punctuation<'_> {
-    fn new(punctuation: &'_ str) -> Punctuation<'_> {
-        Punctuation(punctuation)
+    fn new(contents: &'_ str) -> Punctuation<'_> {
+        Punctuation { contents }
     }
 }
 
 /// The pre-cite signal.
 #[derive(Debug, PartialEq, Eq)]
-pub struct Signal<'a>(&'a str);
+pub struct Signal<'a> {
+    pub contents: &'a str,
+}
 
 impl Signal<'_> {
-    fn new(signal: &'_ str) -> Signal<'_> {
-        Signal(signal)
+    fn new(contents: &'_ str) -> Signal<'_> {
+        Signal { contents }
     }
 }
 

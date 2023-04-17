@@ -1,7 +1,7 @@
 //! This module contains functionality for rendering the output.
 
 use crate::pre::{
-    parser::Branch,
+    parser::{Branch, PreCite},
     sourcemap::{SourceMap, SourceType},
 };
 use slog::{debug, trace};
@@ -69,10 +69,10 @@ fn render_branch(
     match branch {
         Branch::Text(text) => text.contents.to_string(),
         Branch::Footnote(footnote) => {
+            *current_footnote += 1;
+
             // Iterate through the branches of a footnote, collecting them in a
             // string.
-
-            *current_footnote += 1;
 
             // TODO This should probably be a string with some capacity to avoid
             // reallocations.
@@ -89,19 +89,41 @@ fn render_branch(
             format!("^[{}]", contents.trim())
         }
         Branch::Citation(citation) => {
-            let mut contents = String::from(" ");
+            let mut contents = String::new();
+            let mut capitalize = true;
+
+            // First render the pre-citation puncutation or signal.
+            if let Some(r) = &citation.pre_cite {
+                match r {
+                    PreCite::Punctuation(p) => {
+                        if !p.contents.contains('.')
+                            && !p.contents.contains('!')
+                            && !p.contents.contains('?')
+                        {
+                            capitalize = false;
+                        }
+                        contents.push_str(p.contents);
+                    }
+                    PreCite::Signal(s) => {
+                        capitalize = false;
+                        contents.push_str(s.contents);
+                    }
+                }
+            }
 
             // Rendering a citation depends on the source type. If the source is
             // an article, book, chapter, or manuscript, all that matters is
             // whether the source has been cited. If the source is a case, we
-            // need to know how far back the last cite was. It's probably best
-            // to start counting the footnotes, which might make `Id.`s easier.
+            // need to know how far back the last cite was.
 
             if last_citation.source.is_some()
                 && &source_map[citation.reference].id == last_citation.source.as_ref().unwrap()
             {
                 // It's an *Id.*
-                contents.push_str("*Id.*");
+                match capitalize {
+                    true => contents.push_str("*Id.*"),
+                    false => contents.push_str("*id.*"),
+                }
 
                 // Add a pin, if any.
                 if citation.pincite.is_some() {
