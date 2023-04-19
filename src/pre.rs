@@ -92,7 +92,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn preprocess_sources() {
+    fn sources() {
         let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
         let lexed = lexer::lexer(test_inputs::SUPRASOURCES).unwrap();
         let parsed = parser::parser(&lexed, 0).unwrap();
@@ -109,7 +109,7 @@ mod tests {
     }
 
     #[test]
-    fn preprocess_cases() {
+    fn cases() {
         let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
         let lexed = lexer::lexer(test_inputs::SUPRACASES).unwrap();
         let parsed = parser::parser(&lexed, 0).unwrap();
@@ -126,7 +126,7 @@ mod tests {
     }
 
     #[test]
-    fn preprocess_ids() {
+    fn ids() {
         let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
         let lexed = lexer::lexer(test_inputs::IDCITES).unwrap();
         let parsed = parser::parser(&lexed, 0).unwrap();
@@ -143,7 +143,7 @@ mod tests {
     }
 
     #[test]
-    fn precprocess_puncutation() {
+    fn puncutation() {
         let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
         let lexed = lexer::lexer(test_inputs::PUNCTUATION).unwrap();
         let parsed = parser::parser(&lexed, 0).unwrap();
@@ -160,7 +160,7 @@ mod tests {
     }
 
     #[test]
-    fn preprocess_signals() {
+    fn signals() {
         let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
         let lexed = lexer::lexer(test_inputs::SIGNALS).unwrap();
         let parsed = parser::parser(&lexed, 0).unwrap();
@@ -170,6 +170,23 @@ mod tests {
 
         let render_lines = render.lines();
         let target_lines: Vec<&str> = test_inputs::SIGNALSTARGET.lines().collect();
+
+        for (i, line) in render_lines.enumerate() {
+            assert_eq!(line, target_lines[i])
+        }
+    }
+
+    #[test]
+    fn string_cite_test() {
+        let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
+        let lexed = lexer::lexer(test_inputs::STRINGCITE).unwrap();
+        let parsed = parser::parser(&lexed, 0).unwrap();
+        let crossref_map = crossref::build_crossref_map(&parsed);
+        let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
+        let render = render::render(&parsed, &mut source_map, &crossref_map);
+
+        let render_lines = render.lines();
+        let target_lines: Vec<&str> = test_inputs::STRINGCITETARGET.lines().collect();
 
         for (i, line) in render_lines.enumerate() {
             assert_eq!(line, target_lines[i])
@@ -541,6 +558,20 @@ No signal.^[Plaintiff J v. Defendant J, 10 F.3d 1000, 1001 (10th Cir. 2000).]
 `*See generally, e.g.*,` signal.^[*See generally, e.g.*, *id.* at 1002.]
 `*see generally, e.g.*,` signal.^[*Id.* at 1003; *see generally, e.g.*, *id.* at 1004.]
 `see generally, e.g.,` signal.^[Lead in, see generally, e.g., *id.* at 1005.]
+"#######;
+
+        pub const STRINGCITE: &str = r#######"
+# String Cites
+
+This footnote has a string cite.^[*See, e.g.*, [@PlaintiffDefendant1998] at 12; [@dauthorTwoAuthorJournalArticle2021] at 110.]
+This footnote should have a short cite, since the source was previously cited in a string.^[*Cf.* [@dauthorTwoAuthorJournalArticle2021] at 112.]
+"#######;
+
+        pub const STRINGCITETARGET: &str = r#######"
+# String Cites
+
+This footnote has a string cite.^[*See, e.g.*, Plaintiff H v. Defendant H, 888 F.3d 8, 12 (8th Cir. 1998); Article Dauthor, Jr. & Article III Fauthor, *Two-Author Journal Article: This Article Has Two Authors*, 51 **J. J. Articles** 101, 110 (2021).]
+This footnote should have a short cite, since the source was previously cited in a string.^[*Cf.* Dauthor & Fauthor, *supra* note 1, at 112.]
 "#######;
     }
 }

@@ -323,6 +323,8 @@ pub fn add_other_volume(csl_source: &CSLSource, source_type: &SourceType, cite: 
 }
 
 /// The container name (book, journal name, or reporter) for cases, chapters, and articles.
+///
+/// Note, this function is the only one that looks for the `container_title_short` field in a [`CSLSource`]. So sources can have their own short title that is used instead of any that a user-journal-list might supply, Supra includes, or Supra might build.
 pub fn add_container_name(
     csl_source: &CSLSource,
     source_type: &SourceType,

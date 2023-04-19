@@ -148,8 +148,9 @@ Supra currently supports four source types:
 * Unpublished manuscripts.
 
 For books, book chapters, and consecutively paginated journal articles, Supra uses the expected CSL JSON fields.
+(Note, you can provide an abbreviated journal name using the `container-title-short` field.)
 If you have multiple sources from the same author in your library, you should add a short title to each source for potential "*hereinafter*" use.
-For unpublished manuscripts that are forthcoming in a law review, you can add `volume` and `container-title` fields to produce a citation in "forthcoming" format, *e.g.,* June Smith, *An Article About Someting*, 10 Law J. (forthcoming 2023).
+And for unpublished manuscripts that are forthcoming in a law review, you can add `volume` and `container-title` fields to produce a citation in "forthcoming" format, *e.g.,* June Smith, *An Article About Someting*, 10 Law J. (forthcoming 2023).
 In Zotero, you can enter those on separate lines in the "Extra" field:
 
 ```Markdown
@@ -257,7 +258,8 @@ But Supra allows you to use a negative offset if you really want to.
 
 Supra has a built-in list of short names for several hundred law journals.
 (See [`src/pre/sourcemap/buildsource/journalnames.rs`](src/pre/sourcemap/buildsource/journalnames.rs), and feel free to contribute additional journals.)
-It will also attempt to abbreviate journal names that it does not know using the Indigo Book guidelines, and you will be notified of these attempts when running Supra.
+It will also read the `container-title-short` field in a CSL JSON file and use that over anything else.
+And it will attempt to abbreviate journal names that it does not know using the Indigo Book guidelines; you will be notified of these attempts when running Supra.
 
 You can also supply your own collection of abbreviated journal names.
 The names must be in the form of a Supra user-journal file.

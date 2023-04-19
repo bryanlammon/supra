@@ -8,9 +8,14 @@ use slog::{debug, trace};
 use std::collections::HashMap;
 
 /// For tracking the last citation.
+///
+/// TODO This isn't working perfectly, as it reads a string cite to the same source as a string cite of multiple sources.
+/// Maybe track the last citation clause, with all of the sources cited in it? A clause starts with a citation and ends once there is a `Text` branch that contains more than a blank space. It could count the number of citations and the sources cited (with no duplication). Then, the next citation would ask whether (1)\ there was a string cite and (2)\ whether it contained different sources. If both are true, an *id.* cannot be used.
 struct LastCitation {
     footnote: i32,
     source: Option<String>,
+    punctuation: char,
+    string: bool,
 }
 
 /// The main render function.
@@ -35,6 +40,8 @@ pub fn render(
     let mut last_citation = LastCitation {
         footnote: current_footnote,
         source: None,
+        punctuation: ' ',
+        string: false,
     };
 
     for branch in tree {
@@ -117,6 +124,7 @@ fn render_branch(
             // need to know how far back the last cite was.
 
             if last_citation.source.is_some()
+                && !last_citation.string
                 && &source_map[citation.reference].id == last_citation.source.as_ref().unwrap()
             {
                 // It's an *Id.*
@@ -206,11 +214,17 @@ fn render_branch(
             }
             contents.push_str(citation.punctuation);
 
-            // Update the last citation
+            // Update the last citation to the what was just cited.
+            // If the previous citation ended with a semicolon or comma, then the current citation is probably---though not definitely---part of a string.
+            if last_citation.punctuation == ',' || last_citation.punctuation == ';' {
+                last_citation.string = true;
+            } else {
+                last_citation.string = false;
+            }
 
-            // Whether it was part of a string can be checked using the last citation's punctuation.
             last_citation.footnote = *current_footnote;
             last_citation.source = Some(source_map[citation.reference].id.clone());
+            last_citation.punctuation = citation.punctuation.chars().next().unwrap();
 
             contents
         }
