@@ -230,6 +230,7 @@ fn main() -> Result<(), String> {
             let name = vals[0];
 
             // Error correction for invalid characters in the name.
+            //
             // # % & { } \ < > * ? / $ ! ' " : @ + ` | =
             if !valid_name(name) {
                 eprintln!(

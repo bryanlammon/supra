@@ -329,16 +329,6 @@ fn footnote_lexer(input: &str) -> Result<Vec<Token>, String> {
             // Look for a citation, crossref, or cite break.
             if c == b'@' && lexer.last_char == Some(b'[') {
                 // If there was something before the citation, send it to the
-                //pre-cite lexer. if !&input[lexer.start..i -
-                //1].trim().is_empty() {
-
-                //    trace!( slog_scope::logger(), "Pushing token type {:?}
-                //        containing {:?}", TokenType::Text,
-                //        &input[lexer.start..i - 1] );
-                //        lex.push(Token::new(TokenType::Text,
-                //        &input[lexer.start..i - 1]));
-                //}
-
                 if !&input[lexer.start..i - 1].is_empty() {
                     match slog_scope::scope(
                         &slog_scope::logger().new(o!("fn" => "pre_cite_lexer()")),
@@ -381,24 +371,8 @@ fn footnote_lexer(input: &str) -> Result<Vec<Token>, String> {
                 lexer.open_parens = 0;
                 lexer.start = i - 1;
             } else if c == b'$' && lexer.last_char == Some(b'[') {
-                // If there was something before the cite break, add it as a
-                // text token.
-                //if !&input[lexer.start..i - 1].is_empty() {
-                //    trace!(
-                //        slog_scope::logger(),
-                //        "Pushing token type {:?} containing {:?}",
-                //        TokenType::Text,
-                //        &input[lexer.start..i - 1]
-                //    );
-                //    lex.push(Token::new(TokenType::Text, &input[lexer.start..i - 1]));
-
-                //    lexer.context = Context::CiteBreak;
-                //    lexer.open_brackets = 1; // Expect a closing bracket for the cite break
-                //    lexer.open_parens = 0;
-                //    lexer.start = i - 1;
-                //}
-
-                // If there was something before the cite break, send it to the pre-cite lexer.
+                // If there was something before the cite break, send it to the
+                // pre-cite lexer.
                 if !&input[lexer.start..i - 1].is_empty() {
                     match slog_scope::scope(
                         &slog_scope::logger().new(o!("fn" => "pre_cite_lexer()")),
@@ -494,28 +468,11 @@ fn pre_cite_lexer(input: &str) -> Result<Vec<Token>, String> {
     // search.
     let signal = SIGNAL.find(input);
 
-    //println!("{:?}", signal);
-
-    //DEBUG//
-    //if signal.is_some() {
-    //    println!(
-    //        "SIGNAL FOUND: {:?}",
-    //        &input[signal.as_ref().unwrap().range()]
-    //    );
-    //} else {
-    //    println!("NO SIGNAL FOUND");
-    //}
-
     // Look for ending punctuation if there's no signal.
     let punctuation = match signal {
         Some(_) => None,
         None => PUNCTUATION.find(input),
     };
-
-    //DEBUG
-    // if punctuation.is_some() { println!( "PUNCTUATION FOUND: {:?}",
-    //&input[punctuation.as_ref().unwrap().range()] ); } else { println!("NO
-    //    PUNCTUATION FOUND") }
 
     // The rest is the text.
     if let Some(s) = signal {
@@ -527,8 +484,6 @@ fn pre_cite_lexer(input: &str) -> Result<Vec<Token>, String> {
                 TokenType::Text,
                 &input[0..s.start()]
             );
-            //DEBUG
-            // println!("PRE-SIGNAL TEXT: {}", &input[0..s.start()]);
 
             lex.push(Token::new(TokenType::Text, &input[0..s.start()]));
         }
@@ -540,8 +495,6 @@ fn pre_cite_lexer(input: &str) -> Result<Vec<Token>, String> {
             TokenType::Signal,
             &input[s.range()]
         );
-        //DEBUG//
-        //println!("SIGNAL: {}", &input[s.range()]);
 
         lex.push(Token::new(TokenType::Signal, &input[s.range()]));
     } else if let Some(p) = punctuation {
@@ -554,8 +507,6 @@ fn pre_cite_lexer(input: &str) -> Result<Vec<Token>, String> {
                 TokenType::Text,
                 &input[0..p.start()]
             );
-            //DEBUG// println!("PRE-PUNCTUATION TEXT: {}",
-            //&input[0..p.start()]);
 
             lex.push(Token::new(TokenType::Text, &input[0..p.start()]));
         }
@@ -566,7 +517,6 @@ fn pre_cite_lexer(input: &str) -> Result<Vec<Token>, String> {
             TokenType::PreCitePunctuation,
             &input[p.range()]
         );
-        //DEBUG println!("PUNCTUATION: {}", &input[p.range()]);
 
         lex.push(Token::new(TokenType::PreCitePunctuation, &input[p.range()]));
     } else {
@@ -576,7 +526,6 @@ fn pre_cite_lexer(input: &str) -> Result<Vec<Token>, String> {
             TokenType::Text,
             &input
         );
-        //DEBUG// println!("NO SIGNAL/PUNCTUATION; TEXT: {}", &input);
 
         lex.push(Token::new(TokenType::Text, input));
     }

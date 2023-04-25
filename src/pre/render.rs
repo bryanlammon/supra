@@ -9,8 +9,14 @@ use std::collections::HashMap;
 
 /// For tracking the last citation.
 ///
-/// TODO This isn't working perfectly, as it reads a string cite to the same source as a string cite of multiple sources.
-/// Maybe track the last citation clause, with all of the sources cited in it? A clause starts with a citation and ends once there is a `Text` branch that contains more than a blank space. It could count the number of citations and the sources cited (with no duplication). Then, the next citation would ask whether (1)\ there was a string cite and (2)\ whether it contained different sources. If both are true, an *id.* cannot be used.
+/// TODO This isn't working perfectly, as it reads a string cite to the same
+/// source as a string cite of multiple sources. Maybe track the last citation
+/// clause, with all of the sources cited in it? A clause starts with a citation
+/// and ends once there is a `Text` branch that contains more than a blank
+/// space. It could count the number of citations and the sources cited (with no
+/// duplication). Then, the next citation would ask whether (1)\ there was a
+/// string cite and (2)\ whether it contained different sources. If both are
+/// true, an *id.* cannot be used.
 struct LastCitation {
     footnote: i32,
     source: Option<String>,
@@ -141,7 +147,8 @@ fn render_branch(
             } else if source_map[citation.reference].source_type == SourceType::Case {
                 // Case citation.
 
-                // Determine if this is the first footnote OR if the case has been cited in the last 4 footnotes.
+                // Determine if this is the first footnote OR if the case has
+                // been cited in the last 4 footnotes.
                 let current_footnote_local = *current_footnote;
 
                 // Has the case been cited in the last five footnotes?
@@ -207,15 +214,18 @@ fn render_branch(
                 contents.push_str(&source_map[citation.reference].short_cite_no_pin());
             }
 
-            // Reardless of the cite type, add the parenthetical and punctuation.
+            // Reardless of the cite type, add the parenthetical and
+            // punctuation.
             if citation.parenthetical.is_some() {
                 contents.push(' ');
                 contents.push_str(citation.parenthetical.unwrap());
             }
             contents.push_str(citation.punctuation);
 
-            // Update the last citation to the what was just cited.
-            // If the previous citation ended with a semicolon or comma, then the current citation is probably---though not definitely---part of a string.
+            // Update the last citation to the what was just cited. If the
+            // previous citation ended with a semicolon or comma, then the
+            // current citation is probably---though not definitely---part of a
+            // string.
             if last_citation.punctuation == ',' || last_citation.punctuation == ';' {
                 last_citation.string = true;
             } else {

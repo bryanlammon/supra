@@ -36,11 +36,8 @@ pub fn post(
 
     // input is the .md file that contains the yaml block and metadata.
     // output is the .docx file.
+    //
     // These variables need renaming... TODO
-
-    // Setup the paths
-    //let input = Path::new(input);
-    //let output = output.map(Path::new).unwrap();
 
     // Get any necessary metadata
     let mut metadata: Metadata = Metadata {
@@ -51,9 +48,6 @@ pub fn post(
         running_header: None,
     };
     if author_note || running_header {
-        // Read the markdown file
-        //let input_contents = std::fs::read_to_string(input).unwrap();
-
         // Get the first document, which has the yaml data
         if let Some(document) = serde_yaml::Deserializer::from_str(md_input).next() {
             if let Ok(m) = Metadata::deserialize(document) {

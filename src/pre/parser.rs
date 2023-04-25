@@ -362,10 +362,6 @@ mod tests {
                     token_type: TokenType::CitePunctuation,
                     contents: ".",
                 },
-                //Token {
-                //    token_type: TokenType::Text,
-                //    contents: " This footnote is a bit complicated. *See, e.g.*, ",
-                //},
                 Token {
                     token_type: TokenType::Text,
                     contents: " This footnote is a bit complicated. *See, e.g.*, Source not in the library; ",
