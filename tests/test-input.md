@@ -85,17 +85,32 @@ This sentence should have a long cite.^[[@PlaintiffDefendant1999] at 10.]
 This sentence should have a long cite.^[[@PlaintiffDefendant1996] at 10.]
 This sentence should have a short cite.^[[@PlaintiffDefendant1999] at 10.]
 
-## Ids
+# *Id.*
+
+## Basic *Id.*
 
 This sentence cites to one source.^[[@PlaintiffDefendant2000].]
-It then cites to it again, which should be an *Id.*.^[[@PlaintiffDefendant2000] at 20.]
+It then cites to it again, which should be an `*Id.*`.^[[@PlaintiffDefendant2000] at 20.]
 Then a new source.^[[@PlaintiffDefendant2001] at 12.]
-And that source again.^[[@PlaintiffDefendant2001] at 13.]
+And that source again, which should be an `*Id.*`.^[[@PlaintiffDefendant2001] at 13.]
 
-This sentence cites to the same source twice in one footnote.^[Here's some text. *See* [@PlaintiffDefendant2001] at 55. Here's some more text that is hopefully followed by an *Id.*. *See* [@PlaintiffDefendant2001] at 55.]
+This sentence cites to the same source twice in one footnote.^[Here's some text. *See* [@PlaintiffDefendant2001] at 55. Here's some more text that is hopefully followed by an `*Id.*`. *See* [@PlaintiffDefendant2001] at 55.]
+
+## Lowercase *id.*
+
+This sentence cites to one source.^[[@PlaintiffDefendant1991] at 10.]
+This sentence has a citation clause, which should use a lowercase `*id.*`.^[This is the lead-in, see [@PlaintiffDefendant1991] at 11.]
 
 ## Citation Break
 
 This sentence cites to a souce.^[[@PlaintiffDefendant1998].]
-This sentence cites to a source not in the library, so it needs a cite breaker.^[A Souce that Isn't in the Library at 12.[$]]
-So this sentence should have a short cite, not an *Id.*^[[@PlaintiffDefendant1998].]
+This sentence cites to a source not in the library, so it needs a cite breaker.^[[$] A Souce that Isn't in the Library at 12.]
+So this sentence should have a short cite, not an `*Id.*`.^[[@PlaintiffDefendant1998].]
+
+## String Cites
+
+This sentence cites to two sources.^[*See* [@PlaintiffDefendant1992] at 205; [@PlaintiffDefendant1993] at 33.]
+This sentence cites to the second source, which should be a short cite, not an `*Id.*`.^[[@PlaintiffDefendant1993] at 34.]
+
+This citation clause uses the same source twice.^[*See* [@PlaintiffDefendant1994] at 450; *see also* [@PlaintiffDefendant1994] at 460.]
+This sentence cites to the same source, which should be an `*Id.*`.^[*See* [@PlaintiffDefendant1994] at 470.]

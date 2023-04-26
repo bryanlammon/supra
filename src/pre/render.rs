@@ -7,21 +7,17 @@ use crate::pre::{
 use slog::{debug, trace};
 use std::collections::HashMap;
 
-/// For tracking the last citation.
+/// For tracking the last citations.
 ///
-/// TODO This isn't working perfectly, as it reads a string cite to the same
-/// source as a string cite of multiple sources. Maybe track the last citation
-/// clause, with all of the sources cited in it? A clause starts with a citation
-/// and ends once there is a `Text` branch that contains more than a blank
-/// space. It could count the number of citations and the sources cited (with no
-/// duplication). Then, the next citation would ask whether (1)\ there was a
-/// string cite and (2)\ whether it contained different sources. If both are
-/// true, an *id.* cannot be used.
+/// This tracks the last citation clause, adding sources to the collection until
+/// it hits a period, which closes off the clause. After a clause is closed off,
+/// the next citation will ask whether the previous clause included more than
+/// one citation. If it did, then an `*Id.*` is not appropriate. If it didn't,
+/// the next citation will ask whether it was the only source cited in the last
+/// clause. If it was, then an `*Id.*` is appropriate.
 struct LastCitation {
-    footnote: i32,
-    source: Option<String>,
-    punctuation: char,
-    string: bool,
+    sources: Vec<String>,
+    closed: bool,
 }
 
 /// The main render function.
@@ -44,12 +40,11 @@ pub fn render(
     // Track the footnotes and cites.
     let mut current_footnote = 0;
     let mut last_citation = LastCitation {
-        footnote: current_footnote,
-        source: None,
-        punctuation: ' ',
-        string: false,
+        sources: Vec::new(),
+        closed: false,
     };
 
+    // Push the render results.
     for branch in tree {
         output.push_str(&render_branch(
             branch,
@@ -64,7 +59,7 @@ pub fn render(
     output
 }
 
-/// Renders an individual branch.
+/// Renders a branch.
 ///
 /// Receives branches and renders them depending on their type, returning a
 /// string. Note that branches themselves can call this funciton to render their
@@ -84,12 +79,12 @@ fn render_branch(
         Branch::Footnote(footnote) => {
             *current_footnote += 1;
 
-            // Iterate through the branches of a footnote, collecting them in a
-            // string.
-
             // TODO This should probably be a string with some capacity to avoid
             // reallocations.
             let mut contents: String = String::new();
+
+            // Iterate through the branches of a footnote, collecting them in a
+            // string.
             for footnote_branch in &footnote.contents {
                 contents.push_str(&render_branch(
                     footnote_branch,
@@ -129,9 +124,17 @@ fn render_branch(
             // whether the source has been cited. If the source is a case, we
             // need to know how far back the last cite was.
 
-            if last_citation.source.is_some()
-                && !last_citation.string
-                && &source_map[citation.reference].id == last_citation.source.as_ref().unwrap()
+            // If (1)\ (a)\ the last citation clause is finished, (b)\ it
+            // contained only one source, and (c)\ that source is the same as
+            // the current one, OR (2)\ (a)\ the last citation clause is open,
+            // and (b)\ the immediately preceding source is the same one, use an
+            // `*Id.*`.
+            if (last_citation.closed
+                && last_citation.sources.len() == 1
+                && source_map[citation.reference].id == last_citation.sources[0])
+                || (!last_citation.closed
+                    && !last_citation.sources.is_empty()
+                    && &source_map[citation.reference].id == last_citation.sources.last().unwrap())
             {
                 // It's an *Id.*
                 match capitalize {
@@ -222,19 +225,41 @@ fn render_branch(
             }
             contents.push_str(citation.punctuation);
 
-            // Update the last citation to the what was just cited. If the
-            // previous citation ended with a semicolon or comma, then the
-            // current citation is probably---though not definitely---part of a
-            // string.
-            if last_citation.punctuation == ',' || last_citation.punctuation == ';' {
-                last_citation.string = true;
-            } else {
-                last_citation.string = false;
+            // Update the last citation to what was just cited.
+            //
+            // First, if the previous clause is closed, erase it and start a new
+            // one. If it's not, add the new citation to the collection if it's
+            // not already there.
+            if last_citation.closed {
+                last_citation.sources = vec![source_map[citation.reference].id.clone()];
+                last_citation.closed = false;
+            } else if !last_citation
+                .sources
+                .contains(&source_map[citation.reference].id)
+            {
+                last_citation
+                    .sources
+                    .push(source_map[citation.reference].id.clone());
             }
 
-            last_citation.footnote = *current_footnote;
-            last_citation.source = Some(source_map[citation.reference].id.clone());
-            last_citation.punctuation = citation.punctuation.chars().next().unwrap();
+            // Then, if the latest's sources punctuation ends a clause, close
+            // off the clause.
+            if citation.punctuation == "."
+                || citation.punctuation == "!"
+                || citation.punctuation == "?"
+            {
+                last_citation.closed = true;
+            }
+
+            //if last_citation.punctuation == ',' || last_citation.punctuation
+            //== ';' {
+            //    last_citation.string = true;
+            //} else { last_citation.string = false; }
+
+            //last_citation.footnote = *current_footnote; last_citation.source =
+            //Some(source_map[citation.reference].id.clone());
+            //last_citation.punctuation =
+            //citation.punctuation.chars().next().unwrap();
 
             contents
         }
@@ -242,7 +267,8 @@ fn render_branch(
         Branch::CrossRef(crossref) => crossref_map[crossref.contents].to_string(),
 
         Branch::CiteBreak => {
-            last_citation.source = None;
+            last_citation.sources = Vec::new();
+            last_citation.closed = true;
             "".to_string()
         }
     }
