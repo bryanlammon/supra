@@ -6,7 +6,7 @@ use crate::pre::{
 };
 use ansi_term::Color;
 use slog::{debug, trace};
-use std::{collections::HashMap, process};
+use std::collections::HashMap;
 
 /// For tracking the last citations.
 ///
