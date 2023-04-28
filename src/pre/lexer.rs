@@ -415,10 +415,9 @@ fn footnote_lexer(input: &str) -> Result<Vec<Token>, String> {
                     lex.push(Token::new(TokenType::Text, &input[lexer.start..i]));
                 }
             } else {
-                // I don't think this is possible (the call to the footnote
-                // lexer requires a closing bracket), but I'm accounting for it.
+                // If the footnote lexer ends on something other than Text, then there's probably no punctuation in the citation.
                 return Err(format!(
-                    "The footnote \"{:?}\" does not end with a closing bracket.",
+                    "Something is wrong with the footnote \"{:?}\", probably a citation without ending punctuation.",
                     input
                 ));
             }
@@ -1558,6 +1557,25 @@ mod tests {
             assert_eq!(citation6[1].token_type, TokenType::Pincite);
             assert_eq!(citation7[1].contents, r" 100--01");
             assert_eq!(citation7[1].token_type, TokenType::Pincite);
+        }
+    }
+
+    mod test_errors {
+        use super::*;
+
+        #[test]
+        fn bad_footnote_brakcet() {
+            let content = lexer(
+                "This is an input string with a bad footnote.^[Footnote with a no closing bracket.",
+            );
+            assert!(content.is_err());
+        }
+
+        #[test]
+        fn bad_citation_puncutation() {
+            let content =
+                lexer("This is an input string with a bad citation.^[*See* [@test2001] at 45]");
+            assert!(content.is_err());
         }
     }
 }
