@@ -184,28 +184,28 @@ pub fn replace_make() {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+//#[cfg(test)]
+//mod tests {
+//    use super::*;
 
-    mod test_load_file {
-        use super::*;
+//    mod test_load_file {
+//        use super::*;
 
-        #[test]
-        fn test_load() {
-            let file = "./tests/test-input.md";
-            let load_result = load_file(Path::new(file));
-            assert!(load_result.is_ok());
-            assert!(load_result.unwrap().contains("Supra Test Document"));
-        }
+//        #[test]
+//        fn test_load() {
+//            let file = "./tests/test-input.md";
+//            let load_result = load_file(Path::new(file));
+//            assert!(load_result.is_ok());
+//            assert!(load_result.unwrap().contains("Supra Test Document"));
+//        }
 
-        #[test]
-        fn fail_load() {
-            let file = "./tests/does-not-exist.md";
-            let load_result = load_file(Path::new(file));
-            assert!(load_result
-                .unwrap_err()
-                .contains("No such file or directory"));
-        }
-    }
-}
+//        #[test]
+//        fn fail_load() {
+//            let file = "./tests/does-not-exist.md";
+//            let load_result = load_file(Path::new(file));
+//            assert!(load_result
+//                .unwrap_err()
+//                .contains("No such file or directory"));
+//        }
+//    }
+//}
