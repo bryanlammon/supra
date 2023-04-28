@@ -445,6 +445,12 @@ This sentence cites to the same source twice in one footnote.^[Here's some text.
 This sentence cites to a souce.^[[@PlaintiffDefendant1998].]
 This sentence cites to a source not in the library, so it needs a cite breaker.^[[$] A Souce that Isn't in the Library at 12.]
 So this sentence should have a short cite, not an `*Id.*`^[[@PlaintiffDefendant1998].]
+
+## *Id.*s for Supra Sources
+
+This sentence cites to a supra source.^[*See* [@cauthorJournalArticleYear2021] at 501.].
+This sentence cites to the same source and another one.^[[@cauthorJournalArticleYear2021] at 502; *see also* [@dauthorTwoAuthorJournalArticle2021] at 110.]
+This sentence cites to the second author.^[*See* [@dauthorTwoAuthorJournalArticle2021] at 112.]
 "#######;
 
         pub const IDCITESTARGET: &str = r#######"
@@ -462,6 +468,12 @@ This sentence cites to the same source twice in one footnote.^[Here's some text.
 This sentence cites to a souce.^[Plaintiff H v. Defendant H, 888 F.3d 8 (8th Cir. 1998).]
 This sentence cites to a source not in the library, so it needs a cite breaker.^[A Souce that Isn't in the Library at 12.]
 So this sentence should have a short cite, not an `*Id.*`^[*Plaintiff H*, 888 F.3d 8.]
+
+## *Id.*s for Supra Sources
+
+This sentence cites to a supra source.^[*See* Article Cauthor, *Journal Article With a Year Volume: This Journal Uses Years as Volumes*, 2021 **The Other J. J. Articles** 501, 501.].
+This sentence cites to the same source and another one.^[*Id.* at 502; *see also* Article Dauthor, Jr. & Article III Fauthor, *Two-Author Journal Article: This Article Has Two Authors*, 51 **J. J. Articles** 101, 110 (2021).]
+This sentence cites to the second author.^[*See* Dauthor & Fauthor, *supra* note 10, at 112.]
 "#######;
 
         pub const PUNCTUATION: &str = r#######"
@@ -556,6 +568,10 @@ No signal.^[[@PlaintiffDefendant2000] at 1001.]
 `*See generally, e.g.*,` signal.^[*See generally, e.g.*, [@PlaintiffDefendant2000] at 1002.]
 `*see generally, e.g.*,` signal.^[[@PlaintiffDefendant2000] at 1003; *see generally, e.g.*, [@PlaintiffDefendant2000] at 1004.]
 `see generally, e.g.,` signal.^[Lead in, see generally, e.g., [@PlaintiffDefendant2000] at 1005.]
+
+Signal without a cite.^[See the discussion in Part II.]
+
+`*See*` signal.^[*See* [@PlaintiffDefendant2000] at 1002.]
 "#######;
 
         pub const SIGNALSTARGET: &str = r#######"
@@ -626,6 +642,10 @@ No signal.^[Plaintiff J v. Defendant J, 10 F.3d 1000, 1001 (10th Cir. 2000).]
 `*See generally, e.g.*,` signal.^[*See generally, e.g.*, *id.* at 1002.]
 `*see generally, e.g.*,` signal.^[*Id.* at 1003; *see generally, e.g.*, *id.* at 1004.]
 `see generally, e.g.,` signal.^[Lead in, see generally, e.g., *id.* at 1005.]
+
+Signal without a cite.^[See the discussion in Part II.]
+
+`*See*` signal.^[*See* *id.* at 1002.]
 "#######;
 
         pub const STRINGCITE: &str = r#######"
