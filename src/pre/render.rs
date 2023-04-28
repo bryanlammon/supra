@@ -4,8 +4,9 @@ use crate::pre::{
     parser::{Branch, PreCite},
     sourcemap::{SourceMap, SourceType},
 };
+use ansi_term::Color;
 use slog::{debug, trace};
-use std::collections::HashMap;
+use std::{collections::HashMap, process};
 
 /// For tracking the last citations.
 ///
@@ -251,20 +252,24 @@ fn render_branch(
                 last_citation.closed = true;
             }
 
-            //if last_citation.punctuation == ',' || last_citation.punctuation
-            //== ';' {
-            //    last_citation.string = true;
-            //} else { last_citation.string = false; }
-
-            //last_citation.footnote = *current_footnote; last_citation.source =
-            //Some(source_map[citation.reference].id.clone());
-            //last_citation.punctuation =
-            //citation.punctuation.chars().next().unwrap();
-
             contents
         }
 
-        Branch::CrossRef(crossref) => crossref_map[crossref.contents].to_string(),
+        Branch::CrossRef(crossref) => {
+            if crossref_map.contains_key(crossref.contents) {
+                crossref_map[crossref.contents].to_string()
+            } else {
+                eprintln!(
+                    "{} Pre-processing error: no footnote with the id \"{}\"",
+                    Color::Red.paint("ERRO"),
+                    crossref.contents
+                );
+                #[cfg(not(test))]
+                std::process::exit(1);
+                #[cfg(test)]
+                std::process::exit(0);
+            }
+        }
 
         Branch::CiteBreak => {
             last_citation.sources = Vec::new();

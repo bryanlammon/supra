@@ -860,7 +860,7 @@ mod tests {
         }
 
         #[test]
-        fn unkowable_journal() {
+        fn unknowable_journal() {
             let long_name = "Not a Journal Title";
             let short_name = build_short_journal(long_name, &None);
 
