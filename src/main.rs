@@ -11,7 +11,7 @@ use slog::{debug, Drain, Level};
 use std::{fs::OpenOptions, process, sync::Mutex};
 use supra::config::{Output, PanConfig, PostConfig, PreConfig, SupraCommand, SupraConfig};
 
-fn main() -> Result<(), String> {
+fn main() {
     // Get the command-line arguments and options
     let matches = App::new("supra")
         .version(crate_version!())
@@ -327,7 +327,7 @@ fn main() -> Result<(), String> {
     // Run the program.
     let _ = supra::supra(config);
 
-    Ok(())
+    process::exit(0);
 }
 
 /// Tests a project name for valid characters.
