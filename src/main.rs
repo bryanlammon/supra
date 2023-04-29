@@ -1,4 +1,4 @@
-//! `main.rs` contains the command-line interface for supra. It collects the
+//! `main.rs` contains the command-line interface for Supra. It collects the
 //! values and options, sets up the logger, assembles the configuration, and
 //! passes everything to the main function.
 

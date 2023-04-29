@@ -12,6 +12,7 @@ pub mod userjournals;
 use slog::{debug, o};
 use userjournals::build_user_journals;
 
+/// The pre-processor function.
 pub fn pre<'a>(
     input: &'a str,
     library: &'a str,
