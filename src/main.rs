@@ -88,7 +88,7 @@ fn main() -> Result<(), String> {
             Arg::with_name("author_note")
                 .short('a')
                 .long("author")
-                .help("Add an author footnote (requires .ron file with contents)"),
+                .help("Add an author footnote (requires author note metadata)"),
         )
         .arg(
             Arg::with_name("tabbed_footnotes")
@@ -106,9 +106,7 @@ fn main() -> Result<(), String> {
             Arg::with_name("running_header")
                 .short('r')
                 .long("header")
-                .help(
-                    "Add a year and running title to the header (requires .ron file with contents)",
-                ),
+                .help("Add a year and running title to the header (requires header metadata)"),
         )
         .arg(
             Arg::with_name("debug")
