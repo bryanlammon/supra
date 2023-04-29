@@ -4,12 +4,13 @@ Supra lets you write legal scholarship in Markdown.
 
 - [About](#about)
 - [Setup](#setup)
+- [Basic Usage](#basic-usage)
   - [Supra Markup](#supra-markup)
     - [Citations](#citations)
     - [Internal Cross-References](#internal-cross-references)
   - [Source Library](#source-library)
 - [Usage \& Options](#usage--options)
-  - [Basic Usage](#basic-usage)
+  - [Basic Usage](#basic-usage-1)
   - [Pre-Processor Options](#pre-processor-options)
     - [Small Caps](#small-caps)
     - [Offsetting](#offsetting)
@@ -42,11 +43,72 @@ Finally, a post-processor can edit the `.docx` file that Pandoc produces, turnin
 
 ## Setup
 
-At a bare minimum, Supra requires a file in Pandoc-markdown format—with [Supra's additional markup](#supra-markup)—and a source library in [CSL JSON](https://citationstyles.org) format.
-The pre-processor can be used without [Pandoc](https://pandoc.org)—outputting to either standard out or a markdown file.
+At a bare minimum, Supra requires a file in Pandoc-markdown format—with Supra's additional markup—and a source library in [CSL JSON](https://citationstyles.org) format.
+The pre-processor can be used without Pandoc—outputting to either standard out or a markdown file.
 But Pandoc is necessary to get the most out of Supra.
 And you should also use a Pandoc custom reference for the `.docx` output.
 Supra comes with two custom references.
+
+To learn Supra's markup, see the [Supra Book]().
+That book also contains information on installing Pandoc and Supra, setting up an editor for writing, setting up a source library, and more.
+
+## Basic Usage
+
+Supra requires two arguments: the Pandoc-markdown file and the CSL JSON library.
+These files are expected at positions one and two, respectively.
+With only two arguments, the output will go to standard out, which can then be manually piped into Pandoc.
+
+```sh
+# Two-argument example
+supra input.md library.json
+
+# Piping example
+supra input.md library.json | pandoc --from=markdown -o output.docx
+```
+
+An optional third argument is the output file.
+That file must end with an `.md` or `.docx` extension.
+An `.md` will output in Markdown format; `.docx` will run Pandoc to output a Word document.
+
+```sh
+# Three-argument example with Markdown output
+supra input.md library.json output.md
+
+# Three-argument example with .docx output
+supra input.md library.json output.docx
+```
+
+Finally, an optional fourth argument is the Pandoc [custom reference file](https://pandoc.org/MANUAL.html#option--reference-doc).
+Invoking this argument requires that the third argument (the output file) end with a `.docx` extension.
+If you output to Markdown, Pandoc will not run and the custom reference will be useless.
+And if you do not supply an output file at all—meaning that the custom reference file is your third argument—Supra will think that the custom reference file is your desired output.
+
+```sh
+# Using a custom reference
+supra input.md library.json output.docx custom-reference.docx
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### Supra Markup
 
@@ -531,3 +593,4 @@ docx: $(docx_file)
 * 0.1.1: Fixed readme & blank-user journal command
 * 0.1.2: Updated documentation
 * 0.2.0: Added Pandoc and post-processing functionality
+* 0.3.0: Added support for cases and automatic `*Id.*`s.
