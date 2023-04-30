@@ -39,6 +39,7 @@ pub struct CSLSource {
     #[serde(rename(deserialize = "URL"))]
     pub url: Option<String>,
     pub volume: Option<String>,
+    pub references: Option<String>,
 }
 
 /// Struct holding the CSL JSON `name-variable` data.

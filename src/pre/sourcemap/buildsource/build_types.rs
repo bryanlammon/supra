@@ -85,6 +85,10 @@ pub fn build_case_long(
         citetools::add_end_parenthetical(csl_source, source_type, &mut long_cite_post_pin);
     }
 
+    if csl_source.references.is_some() {
+        citetools::add_weight(csl_source, &mut long_cite_post_pin)
+    }
+
     let mut long_cite_no_pin = long_cite_pre_pin.clone();
     long_cite_no_pin.push_str(&long_cite_post_pin);
 

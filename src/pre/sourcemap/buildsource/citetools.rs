@@ -190,7 +190,8 @@ pub fn build_short_author(name_vector: &[NameVariable]) -> String {
 /// Add the title.
 ///
 /// If it's a book, also bold it. If it's a chapter, journal, or manuscript,
-/// "reverse italicize" it. If it's a case, italicize `In re` and *ex rel*; otherwise let it be.
+/// "reverse italicize" it. If it's a case, italicize `In re` and *ex rel*;
+/// otherwise let it be.
 ///
 /// TODO: shorten words in case names?
 pub fn add_title(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String) {
@@ -297,7 +298,8 @@ pub fn reverse_italicize(title: &str) -> String {
     // Then convert any </i> with following whitespace to that whitespace and *
     new_title = ITALICS3.replace_all(&new_title, "$w*").to_string();
 
-    // Finally convert any <i> or </i> surrounded by non-whitespace characters to *
+    // Finally convert any <i> or </i> surrounded by non-whitespace characters
+    // to *
     new_title = ITALICS4.replace_all(&new_title, "*").to_string();
 
     trace!(slog_scope::logger(), "new_title: {}", new_title);
@@ -322,9 +324,13 @@ pub fn add_other_volume(csl_source: &CSLSource, source_type: &SourceType, cite: 
     cite.push(' ');
 }
 
-/// The container name (book, journal name, or reporter) for cases, chapters, and articles.
+/// The container name (book, journal name, or reporter) for cases, chapters,
+/// and articles.
 ///
-/// Note, this function is the only one that looks for the `container_title_short` field in a [`CSLSource`]. So sources can have their own short title that is used instead of any that a user-journal-list might supply, Supra includes, or Supra might build.
+/// Note, this function is the only one that looks for the
+/// `container_title_short` field in a [`CSLSource`]. So sources can have their
+/// own short title that is used instead of any that a user-journal-list might
+/// supply, Supra includes, or Supra might build.
 pub fn add_container_name(
     csl_source: &CSLSource,
     source_type: &SourceType,
@@ -465,7 +471,8 @@ pub fn add_first_page(csl_source: &CSLSource, cite: &mut String) {
     cite.push_str(csl_source.page.as_ref().unwrap());
 }
 
-/// Add the ending parenthetical with court, edition, editors, translators, and year.
+/// Add the ending parenthetical with court, edition, editors, translators, and
+/// year.
 pub fn add_end_parenthetical(csl_source: &CSLSource, source_type: &SourceType, cite: &mut String) {
     cite.push_str(" (");
 
@@ -538,6 +545,12 @@ pub fn add_end_parenthetical(csl_source: &CSLSource, source_type: &SourceType, c
 
     // Close the parentheses
     cite.push(')');
+}
+
+/// Add the weight of authority to a case.
+pub fn add_weight(csl_source: &CSLSource, cite: &mut String) {
+    cite.push(' ');
+    cite.push_str(csl_source.references.as_ref().unwrap());
 }
 
 /// Add the "hereinafter" to sources that need it.
