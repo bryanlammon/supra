@@ -19,6 +19,7 @@ use std::collections::HashMap;
 struct LastCitation {
     sources: Vec<String>,
     closed: bool,
+    last_pin: String,
 }
 
 /// The main render function.
@@ -43,6 +44,7 @@ pub fn render(
     let mut last_citation = LastCitation {
         sources: Vec::new(),
         closed: false,
+        last_pin: "".to_string(),
     };
 
     // Push the render results.
@@ -144,9 +146,12 @@ fn render_branch(
                 }
 
                 // Add a pin, if any.
-                if citation.pincite.is_some() {
+                if citation.pincite.is_some()
+                    && citation.pincite.as_ref().unwrap() != &last_citation.last_pin
+                {
                     contents.push_str(" at ");
                     contents.push_str(citation.pincite.as_ref().unwrap());
+                    last_citation.last_pin = citation.pincite.as_ref().unwrap().to_string();
                 }
             } else if source_map[citation.reference].source_type == SourceType::Case {
                 // Case citation.
