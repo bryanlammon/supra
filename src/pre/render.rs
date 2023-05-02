@@ -151,6 +151,7 @@ fn render_branch(
                 {
                     contents.push_str(" at ");
                     contents.push_str(citation.pincite.as_ref().unwrap());
+
                     last_citation.last_pin = citation.pincite.as_ref().unwrap().to_string();
                 }
             } else if source_map[citation.reference].source_type == SourceType::Case {

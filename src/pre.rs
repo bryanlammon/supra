@@ -479,6 +479,11 @@ So this sentence should have a short cite, not an `*Id.*`^[[@PlaintiffDefendant1
 This sentence cites to a supra source.^[*See* [@cauthorJournalArticleYear2021] at 501.].
 This sentence cites to the same source and another one.^[[@cauthorJournalArticleYear2021] at 502; *see also* [@dauthorTwoAuthorJournalArticle2021] at 110.]
 This sentence cites to the second author.^[*See* [@dauthorTwoAuthorJournalArticle2021] at 112.]
+
+## Subsequent pincites
+
+This sentence cites to a source with a pincite.^[[@PlaintiffDefendant2000] at 20.]
+This sentence cites to the same source and pincite; it should be just an `*Id.*`.^[[@PlaintiffDefendant2000] at 20.]
 "#######;
 
         pub const IDCITESTARGET: &str = r#######"
@@ -502,6 +507,11 @@ So this sentence should have a short cite, not an `*Id.*`^[*Plaintiff H*, 888 F.
 This sentence cites to a supra source.^[*See* Article Cauthor, *Journal Article With a Year Volume: This Journal Uses Years as Volumes*, 2021 **The Other J. J. Articles** 501, 501.].
 This sentence cites to the same source and another one.^[*Id.* at 502; *see also* Article Dauthor, Jr. & Article III Fauthor, *Two-Author Journal Article: This Article Has Two Authors*, 51 **J. J. Articles** 101, 110 (2021).]
 This sentence cites to the second author.^[*See* Dauthor & Fauthor, *supra* note 10, at 112.]
+
+## Subsequent pincites
+
+This sentence cites to a source with a pincite.^[Plaintiff J v. Defendant J, 10 F.3d 1000, 20 (10th Cir. 2000).]
+This sentence cites to the same source and pincite; it should be just an `*Id.*`.^[*Id.*]
 "#######;
 
         pub const PUNCTUATION: &str = r#######"
