@@ -102,6 +102,7 @@ fn render_branch(
         Branch::Citation(citation) => {
             let mut contents = String::new();
             let mut capitalize = true;
+            let mut render_punctuation = true;
 
             // First render the pre-citation puncutation or signal.
             if let Some(r) = &citation.pre_cite {
@@ -145,6 +146,8 @@ fn render_branch(
                     false => contents.push_str("*id.*"),
                 }
 
+                render_punctuation = false;
+
                 // Add a pin, if any.
                 if citation.pincite.is_some()
                     && citation.pincite.as_ref().unwrap() != &last_citation.last_pin
@@ -153,6 +156,9 @@ fn render_branch(
                     contents.push_str(citation.pincite.as_ref().unwrap());
 
                     last_citation.last_pin = citation.pincite.as_ref().unwrap().to_string();
+
+                    // There's something between the *Id.* and the punctuation.
+                    render_punctuation = true;
                 }
             } else if source_map[citation.reference].source_type == SourceType::Case {
                 // Case citation.
@@ -224,13 +230,18 @@ fn render_branch(
                 contents.push_str(&source_map[citation.reference].short_cite_no_pin());
             }
 
-            // Reardless of the cite type, add the parenthetical and
-            // punctuation.
+            // Reardless of the cite type.
             if citation.parenthetical.is_some() {
                 contents.push(' ');
                 contents.push_str(citation.parenthetical.unwrap());
+
+                render_punctuation = true;
             }
-            contents.push_str(citation.punctuation);
+
+            // Then add the punctuation unless (1)\ the cite was an *Id*, (2)\ there was no pincite or parenthetical, and (3)\ the puncutation is `.`.
+            if render_punctuation {
+                contents.push_str(citation.punctuation)
+            };
 
             // Update the last citation to what was just cited.
             //
