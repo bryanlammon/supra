@@ -94,151 +94,228 @@ mod tests {
 
     #[test]
     fn first_cites() {
-        let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
-        let lexed = lexer::lexer(test_inputs::FIRSTCITES).unwrap();
-        let parsed = parser::parser(&lexed, 0).unwrap();
-        let crossref_map = crossref::build_crossref_map(&parsed);
-        let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
-        let render = render::render(&parsed, &mut source_map, &crossref_map);
-
-        let render_lines = render.lines();
+        let pre = pre(
+            test_inputs::FIRSTCITES,
+            test_inputs::TESTJSON,
+            &None,
+            0,
+            false,
+        )
+        .unwrap();
         let target_lines: Vec<&str> = test_inputs::FIRSTCITESTARGET.lines().collect();
 
-        for (i, line) in render_lines.enumerate() {
+        for (i, line) in pre.lines().enumerate() {
             assert_eq!(line, target_lines[i])
         }
     }
 
     #[test]
     fn sources() {
-        let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
-        let lexed = lexer::lexer(test_inputs::SUPRASOURCES).unwrap();
-        let parsed = parser::parser(&lexed, 0).unwrap();
-        let crossref_map = crossref::build_crossref_map(&parsed);
-        let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
-        let render = render::render(&parsed, &mut source_map, &crossref_map);
+        //let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
+        //let lexed = lexer::lexer(test_inputs::SUPRASOURCES).unwrap();
+        //let parsed = parser::parser(&lexed, 0).unwrap();
+        //let crossref_map = crossref::build_crossref_map(&parsed);
+        //let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
+        //let render = render::render(&parsed, &mut source_map, &crossref_map);
 
-        let render_lines = render.lines();
+        //let render_lines = render.lines();
+        //let target_lines: Vec<&str> = test_inputs::SUPRASOURCESTARGET.lines().collect();
+
+        //for (i, line) in render_lines.enumerate() {
+        //    assert_eq!(line, target_lines[i])
+        //}
+
+        let pre = pre(
+            test_inputs::SUPRASOURCES,
+            test_inputs::TESTJSON,
+            &None,
+            0,
+            false,
+        )
+        .unwrap();
         let target_lines: Vec<&str> = test_inputs::SUPRASOURCESTARGET.lines().collect();
 
-        for (i, line) in render_lines.enumerate() {
+        for (i, line) in pre.lines().enumerate() {
             assert_eq!(line, target_lines[i])
         }
     }
 
     #[test]
     fn cases() {
-        let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
-        let lexed = lexer::lexer(test_inputs::CASES).unwrap();
-        let parsed = parser::parser(&lexed, 0).unwrap();
-        let crossref_map = crossref::build_crossref_map(&parsed);
-        let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
-        let render = render::render(&parsed, &mut source_map, &crossref_map);
+        //let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
+        //let lexed = lexer::lexer(test_inputs::CASES).unwrap();
+        //let parsed = parser::parser(&lexed, 0).unwrap();
+        //let crossref_map = crossref::build_crossref_map(&parsed);
+        //let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
+        //let render = render::render(&parsed, &mut source_map, &crossref_map);
 
-        let render_lines = render.lines();
+        //let render_lines = render.lines();
+        //let target_lines: Vec<&str> = test_inputs::CASESTARGET.lines().collect();
+
+        //for (i, line) in render_lines.enumerate() {
+        //    assert_eq!(line, target_lines[i])
+        //}
+
+        let pre = pre(test_inputs::CASES, test_inputs::TESTJSON, &None, 0, false).unwrap();
         let target_lines: Vec<&str> = test_inputs::CASESTARGET.lines().collect();
 
-        for (i, line) in render_lines.enumerate() {
+        for (i, line) in pre.lines().enumerate() {
             assert_eq!(line, target_lines[i])
         }
     }
 
     #[test]
     fn ids() {
-        let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
-        let lexed = lexer::lexer(test_inputs::IDCITES).unwrap();
-        let parsed = parser::parser(&lexed, 0).unwrap();
-        let crossref_map = crossref::build_crossref_map(&parsed);
-        let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
-        let render = render::render(&parsed, &mut source_map, &crossref_map);
+        //let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
+        //let lexed = lexer::lexer(test_inputs::IDCITES).unwrap();
+        //let parsed = parser::parser(&lexed, 0).unwrap();
+        //let crossref_map = crossref::build_crossref_map(&parsed);
+        //let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
+        //let render = render::render(&parsed, &mut source_map, &crossref_map);
 
-        let render_lines = render.lines();
+        //let render_lines = render.lines();
+        //let target_lines: Vec<&str> = test_inputs::IDCITESTARGET.lines().collect();
+
+        //for (i, line) in render_lines.enumerate() {
+        //    assert_eq!(line, target_lines[i])
+        //}
+
+        let pre = pre(test_inputs::IDCITES, test_inputs::TESTJSON, &None, 0, false).unwrap();
         let target_lines: Vec<&str> = test_inputs::IDCITESTARGET.lines().collect();
 
-        for (i, line) in render_lines.enumerate() {
+        for (i, line) in pre.lines().enumerate() {
             assert_eq!(line, target_lines[i])
         }
     }
 
     #[test]
     fn puncutation() {
-        let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
-        let lexed = lexer::lexer(test_inputs::PUNCTUATION).unwrap();
-        let parsed = parser::parser(&lexed, 0).unwrap();
-        let crossref_map = crossref::build_crossref_map(&parsed);
-        let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
-        let render = render::render(&parsed, &mut source_map, &crossref_map);
+        //let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
+        //let lexed = lexer::lexer(test_inputs::PUNCTUATION).unwrap();
+        //let parsed = parser::parser(&lexed, 0).unwrap();
+        //let crossref_map = crossref::build_crossref_map(&parsed);
+        //let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
+        //let render = render::render(&parsed, &mut source_map, &crossref_map);
 
-        let render_lines = render.lines();
+        //let render_lines = render.lines();
+        //let target_lines: Vec<&str> = test_inputs::PUNCTUATIONTARGET.lines().collect();
+
+        //for (i, line) in render_lines.enumerate() {
+        //    assert_eq!(line, target_lines[i])
+        //}
+
+        let pre = pre(
+            test_inputs::PUNCTUATION,
+            test_inputs::TESTJSON,
+            &None,
+            0,
+            false,
+        )
+        .unwrap();
         let target_lines: Vec<&str> = test_inputs::PUNCTUATIONTARGET.lines().collect();
 
-        for (i, line) in render_lines.enumerate() {
+        for (i, line) in pre.lines().enumerate() {
             assert_eq!(line, target_lines[i])
         }
     }
 
     #[test]
     fn signals() {
-        let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
-        let lexed = lexer::lexer(test_inputs::SIGNALS).unwrap();
-        let parsed = parser::parser(&lexed, 0).unwrap();
-        let crossref_map = crossref::build_crossref_map(&parsed);
-        let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
-        let render = render::render(&parsed, &mut source_map, &crossref_map);
+        //let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
+        //let lexed = lexer::lexer(test_inputs::SIGNALS).unwrap();
+        //let parsed = parser::parser(&lexed, 0).unwrap();
+        //let crossref_map = crossref::build_crossref_map(&parsed);
+        //let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
+        //let render = render::render(&parsed, &mut source_map, &crossref_map);
 
-        let render_lines = render.lines();
+        //let render_lines = render.lines();
+        //let target_lines: Vec<&str> = test_inputs::SIGNALSTARGET.lines().collect();
+
+        //for (i, line) in render_lines.enumerate() {
+        //    assert_eq!(line, target_lines[i])
+        //}
+
+        let pre = pre(test_inputs::SIGNALS, test_inputs::TESTJSON, &None, 0, false).unwrap();
         let target_lines: Vec<&str> = test_inputs::SIGNALSTARGET.lines().collect();
 
-        for (i, line) in render_lines.enumerate() {
+        for (i, line) in pre.lines().enumerate() {
             assert_eq!(line, target_lines[i])
         }
     }
 
     #[test]
     fn string_cite_test() {
-        let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
-        let lexed = lexer::lexer(test_inputs::STRINGCITE).unwrap();
-        let parsed = parser::parser(&lexed, 0).unwrap();
-        let crossref_map = crossref::build_crossref_map(&parsed);
-        let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
-        let render = render::render(&parsed, &mut source_map, &crossref_map);
+        //let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
+        //let lexed = lexer::lexer(test_inputs::STRINGCITE).unwrap();
+        //let parsed = parser::parser(&lexed, 0).unwrap();
+        //let crossref_map = crossref::build_crossref_map(&parsed);
+        //let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
+        //let render = render::render(&parsed, &mut source_map, &crossref_map);
 
-        let render_lines = render.lines();
+        //let render_lines = render.lines();
+        //let target_lines: Vec<&str> = test_inputs::STRINGCITETARGET.lines().collect();
+
+        //for (i, line) in render_lines.enumerate() {
+        //    assert_eq!(line, target_lines[i])
+        //}
+
+        let pre = pre(
+            test_inputs::STRINGCITE,
+            test_inputs::TESTJSON,
+            &None,
+            0,
+            false,
+        )
+        .unwrap();
         let target_lines: Vec<&str> = test_inputs::STRINGCITETARGET.lines().collect();
 
-        for (i, line) in render_lines.enumerate() {
+        for (i, line) in pre.lines().enumerate() {
             assert_eq!(line, target_lines[i])
         }
     }
 
     #[test]
     fn cross_refs_test() {
-        let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
-        let lexed = lexer::lexer(test_inputs::CROSSREFS).unwrap();
-        let parsed = parser::parser(&lexed, 0).unwrap();
-        let crossref_map = crossref::build_crossref_map(&parsed);
-        let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
-        let render = render::render(&parsed, &mut source_map, &crossref_map);
+        //let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
+        //let lexed = lexer::lexer(test_inputs::CROSSREFS).unwrap();
+        //let parsed = parser::parser(&lexed, 0).unwrap();
+        //let crossref_map = crossref::build_crossref_map(&parsed);
+        //let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
+        //let render = render::render(&parsed, &mut source_map, &crossref_map);
 
-        let render_lines = render.lines();
+        //let render_lines = render.lines();
+        //let target_lines: Vec<&str> = test_inputs::CROSSREFSTARGET.lines().collect();
+
+        //for (i, line) in render_lines.enumerate() {
+        //    assert_eq!(line, target_lines[i])
+        //}
+
+        let pre = pre(
+            test_inputs::CROSSREFS,
+            test_inputs::TESTJSON,
+            &None,
+            0,
+            false,
+        )
+        .unwrap();
         let target_lines: Vec<&str> = test_inputs::CROSSREFSTARGET.lines().collect();
 
-        for (i, line) in render_lines.enumerate() {
+        for (i, line) in pre.lines().enumerate() {
             assert_eq!(line, target_lines[i])
         }
     }
 
-    #[test]
-    fn cross_refs_error_test() {
-        let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
-        let lexed = lexer::lexer("This sentence's footnote contains an invalid cross-reference.^[*See* *infra* note [?non_existent] and accompanying text.]").unwrap();
-        let parsed = parser::parser(&lexed, 0).unwrap();
-        let crossref_map = crossref::build_crossref_map(&parsed);
-        let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
-        let _ = render::render(&parsed, &mut source_map, &crossref_map);
-    }
+    //#[test]
+    //fn cross_refs_error_test() {
+    //    let library = csljson::build_csl_lib(test_inputs::TESTJSON).unwrap();
+    //    let lexed = lexer::lexer("This sentence's footnote contains an invalid cross-reference.^[*See* *infra* note [?non_existent] and accompanying text.]").unwrap();
+    //    let parsed = parser::parser(&lexed, 0).unwrap();
+    //    let crossref_map = crossref::build_crossref_map(&parsed);
+    //    let mut source_map = sourcemap::build_source_map(&parsed, &library, &None);
+    //    let _ = render::render(&parsed, &mut source_map, &crossref_map);
+    //}
 
-    mod test_inputs {
+    pub mod test_inputs {
         pub const TESTJSON: &str = r#"[{"id": "authorAnotherBookChapter2021","author": [{"family": "Author","given": "Chapter"}],"citation-key": "authorAnotherBookChapter2021","container-title": "The Title of the Chapter Book","edition": "5th","editor": [{"family": "Editor","given": "Book"}],"issued": {"date-parts": [[2021]]},"page": "101","title": "Another Book Chapter Title: The Chapter of a Book","title-short": "Another Book Chapter Title","type": "chapter","volume": "15"},{"id": "authorAnotherBookTitle2021","author": [{"family": "Author","given": "Book"}],"citation-key": "authorAnotherBookTitle2021","issued": {"date-parts": [[2021]]},"title": "Another Book Title: A Title for the Dummy Book","title-short": "Another Book Title","type": "book"},{"id": "authorAnotherJournalArticle2021","author": [{"family": "Author","given": "Article"}],"citation-key": "authorAnotherJournalArticle2021","container-title": "Journal of Good Journal Articles","container-title-short": "J. Good J. Articles","issued": {"date-parts": [[2021]]},"page": "1","title": "Another Journal Article Title: A Journal Article","title-short": "Another Journal Article","type": "article-journal","volume": "1"},{"id": "authorAnotherNotForthcoming2021","author": [{"family": "Author","given": "Manuscipt"}],"citation-key": "authorAnotherNotForthcoming2021","issued": {"date-parts": [[2021]]},"title": "Another Not Yet Forthcoming Manuscript: This Manuscript Is Not Yet Placed","title-short": "Another Not Yet","type": "manuscript"},{"id": "authorBookChapterTitle2021","author": [{"family": "Author","given": "Chapter"}],"citation-key": "authorBookChapterTitle2021","container-title": "The Title of the Chapter Book","edition": "5th","editor": [{"family": "Editor","given": "Book"}],"issued": {"date-parts": [[2021]]},"page": "101","title": "Book Chapter Title: The Chapter of a Book","title-short": "Book Chapter Title","type": "chapter","volume": "15"},{"id": "authorBookTitleTitle2021","author": [{"family": "Author","given": "Book"}],"citation-key": "authorBookTitleTitle2021","edition": "4th","issued": {"date-parts": [[2021]]},"title": "Book Title: A Title for the Dummy Book","title-short": "Book Title","type": "book"},{"id": "authorJournalArticleTitle2021","author": [{"family": "Author","given": "Article"}],"citation-key": "authorJournalArticleTitle2021","container-title": "Journal of Journal Articles","container-title-short": "J. J. Articles","issued": {"date-parts": [[2021]]},"page": "1000","title": "Journal Article Title: A Journal Article","title-short": "Journal Article","type": "article-journal","volume": "99"},{"id": "authorNotForthcomingManuscript2021","author": [{"family": "Author","given": "Manuscipt"}],"citation-key": "authorNotForthcomingManuscript2021","issued": {"date-parts": [[2021]]},"title": "Not Yet Forthcoming Manuscript: This Manuscript Is Not Yet Placed","title-short": "Not Yet","type": "manuscript"},{"id": "cauthorJournalArticleYear2021","author": [{"family": "Cauthor","given": "Article"}],"citation-key": "cauthorJournalArticleYear2021","container-title": "The Other Journal of Journal Articles","issued": {"date-parts": [[2021]]},"page": "501","title": "Journal Article With a Year Volume: This Journal Uses Years as Volumes","title-short": "Year Volume","type": "article-journal","volume": "2021"},{"id": "dauthorTwoAuthorJournalArticle2021","author": [{"family": "Dauthor","given": "Article","suffix": "Jr."},{"family": "Fauthor","given": "Article III"}],"citation-key": "dauthorTwoAuthorJournalArticle2021","container-title": "Journal of Journal Articles","issued": {"date-parts": [[2021]]},"page": "101","title": "Two-Author Journal Article: This Article Has Two Authors","title-short": "Two-Author","type": "article-journal","volume": "51"},{"id": "DoeState2022","authority": "7th Cir.","citation-key": "DoeState2022","container-title": "F.4th","issued": {"date-parts": [[2022,7,25]]},"number": "21-12345","page": "456","title": "Doe v. State","title-short": "Doe","type": "legal_case","URL": "www.fakeurl.edu","volume": "123"},{"id": "gauthorThreeAuthorJournalArticle2021","author": [{"family": "Gauthor","given": "Article","suffix": "Sr."},{"family": "Hauthor","given": "Article","suffix": "Jr."},{"family": "Jauthor","given": "Article III"}],"citation-key": "gauthorThreeAuthorJournalArticle2021","container-title": "Journal of Journal Articles","issued": {"date-parts": [[2021]]},"page": "201","title": "Three-Author Journal Article: This Article Has Three Authors","title-short": "Three-Authors","type": "article-journal","volume": "50"},{"id": "JohnsonSmith2023","authority": "U.S. Supreme Court","citation-key": "JohnsonSmith2023","container-title": "U.S.","issued": {"date-parts": [[2023]]},"page": "456","title": "Johnson v. Smith","title-short": "Johnson","type": "legal_case","volume": "123"},{"id": "kauthorManuscriptTitleNot2021","author": [{"family": "Kauthor","given": "Manuscript"}],"citation-key": "kauthorManuscriptTitleNot2021","container-title": "University of Manuscripts Law Review","issued": {"date-parts": [[2021]]},"title": "Manuscript Title: Not Yet a Journal Article","title-short": "Manuscript Title","type": "manuscript","URL": "www.manuscripts.manuscript/manuscript","volume": "99"},{"id": "lauthorBookTranslatorThis2021","author": [{"family": "Lauthor","given": "Book"}],"citation-key": "lauthorBookTranslatorThis2021","issued": {"date-parts": [[2021]]},"title": "Book With a Translator: This Book Has a Translator","title-short": "Book With a Translator","translator": [{"family": "Translator","given": "Book"}],"type": "book"},{"id": "mauthorBookEditorThis2021","author": [{"family": "Mauthor","given": "Book"}],"citation-key": "mauthorBookEditorThis2021","edition": "2d","editor": [{"family": "Editor","given": "Book"}],"issued": {"date-parts": [[2021]]},"title": "Book With an Editor: This Book Has an Editor","title-short": "Book With an Editor","type": "book"},{"id": "nauthorMultiVolumeBookThis2021","author": [{"family": "Nauthor","given": "Book"}],"citation-key": "nauthorMultiVolumeBookThis2021","issued": {"date-parts": [[2021]]},"title": "Multi-Volume Book: This Book Is One of Several Volumes","title-short": "Multi-Volume Book","type": "book","volume": "10"},{"id": "PlaintiffDefendant1991","authority": "1st Cir.","citation-key": "PlaintiffDefendant1991","container-title": "F.3d","issued": {"date-parts": [[1991]]},"page": "1","title": "Plaintiff A v. Defendant A","title-short": "Plaintiff A","type": "legal_case","volume": "100"},{"id": "PlaintiffDefendant1992","authority": "2d Cir.","citation-key": "PlaintiffDefendant1992","container-title": "F.3d","issued": {"date-parts": [[1992]]},"page": "200","title": "Plaintiff B v. Defendant B","title-short": "Plaintiff B","type": "legal_case","volume": "2"},{"id": "PlaintiffDefendant1993","authority": "3d Cir.","citation-key": "PlaintiffDefendant1993","container-title": "F.3d","issued": {"date-parts": [[1993]]},"page": "33","title": "Plaintiff C v. Defendant C","title-short": "Plaintiff C","type": "legal_case","volume": "333"},{"id": "PlaintiffDefendant1994","authority": "4th Cir.","citation-key": "PlaintiffDefendant1994","container-title": "F.3d","issued": {"date-parts": [[1994]]},"page": "444","title": "Plaintiff D v. Defendant D","title-short": "Plaintiff D","type": "legal_case","volume": "44"},{"id": "PlaintiffDefendant1995","authority": "5th Cir.","citation-key": "PlaintiffDefendant1995","container-title": "F.3d","issued": {"date-parts": [[1995]]},"page": "555","title": "Plaintiff E v. Defendant E","title-short": "Plaintiff E","type": "legal_case","volume": "5"},{"id": "PlaintiffDefendant1996","authority": "6th Cir.","citation-key": "PlaintiffDefendant1996","container-title": "F.3d","issued": {"date-parts": [[1996]]},"page": "6","title": "Plaintiff F v. Defendant F","title-short": "Plaintiff F","type": "legal_case","volume": "600"},{"id": "PlaintiffDefendant1997","authority": "7th Cir.","citation-key": "PlaintiffDefendant1997","container-title": "F.3d","issued": {"date-parts": [[1997]]},"page": "77","title": "Plaintiff G v. Defendant G","title-short": "Plaintiff G","type": "legal_case","volume": "77"},{"id": "PlaintiffDefendant1998","authority": "8th Cir.","citation-key": "PlaintiffDefendant1998","container-title": "F.3d","issued": {"date-parts": [[1998]]},"page": "8","title": "Plaintiff H v. Defendant H","title-short": "Plaintiff H","type": "legal_case","volume": "888"},{"id": "PlaintiffDefendant1999","authority": "9th Cir.","citation-key": "PlaintiffDefendant1999","container-title": "F.3d","issued": {"date-parts": [[1999]]},"page": "9","title": "Plaintiff I v. Defendant I","title-short": "Plaintiff I","type": "legal_case","volume": "9"},{"id": "PlaintiffDefendant2000","authority": "10th Cir.","citation-key": "PlaintiffDefendant2000","container-title": "F.3d","issued": {"date-parts": [[2000]]},"page": "1000","title": "Plaintiff J v. Defendant J","title-short": "Plaintiff J","type": "legal_case","volume": "10"},{"id": "PlaintiffDefendant2001","authority": "11th Cir.","citation-key": "PlaintiffDefendant2001","container-title": "F.3d","issued": {"date-parts": [[2001]]},"page": "1111","title": "Plaintiff K v. Defendant K","title-short": "Plaintiff K","type": "legal_case","volume": "111"},{"id": "PlaintiffDefendant2020","authority": "D.C. Cir.","citation-key": "PlaintiffDefendant2020","container-title": "F.4th","issued": {"date-parts": [[2020]]},"page": "434","title": "Plaintiff L v. Defendant L","title-short": "Plaintiff L","type": "legal_case","volume": "43"},{"id": "PlaintiffDefendant2023","authority": "Fed. Cir.","citation-key": "PlaintiffDefendant2023","container-title": "F.4th","issued": {"date-parts": [[2023]]},"page": "345","title": "Plaintiff M v. Defendant M","title-short": "Plaintiff M","type": "legal_case","volume": "543"},{"id": "UnitedStatesJones2022","authority": "1st Cir.","citation-key": "UnitedStatesJones2022","container-title": "F.4th","issued": {"date-parts": [[2022]]},"page": "5309","references":"(per curiam)","title": "United States v. Jones","title-short": "Jones","type": "legal_case","volume": "867"}]"#;
 
         pub const FIRSTCITES: &str = r#######"
@@ -304,7 +381,7 @@ This sentence has a footnote with a manuscript.^[[@kauthorManuscriptTitleNot2021
 
 ## w/ Pincites
 
-This sentence has a footnote with a book with a pincite (and a translator).^[[@lauthorBookTranslatorThis2021] at 10.]
+This sentence has a footnote with a book with a pincite (and a translator).^[[@lauthorBookTranslatorThis2021] at §\ 35.10.]
 This sentence has a footnote with a chapter with a pincite.^[[@authorAnotherBookChapter2021] at 101.]
 This sentence has a footnote with a journal article with a pincite (and a year for a volume).^[[@cauthorJournalArticleYear2021] at 501.]
 This sentence has a footnote with a munscript and a pincite (and the manuscript is not forthcoming).^[[@authorNotForthcomingManuscript2021] at 10.]
@@ -346,7 +423,7 @@ This sentence has a footnote with a manuscript.^[Manuscript Kauthor, *Manuscript
 
 ## w/ Pincites
 
-This sentence has a footnote with a book with a pincite (and a translator).^[**Book Lauthor**, **Book With a Translator: This Book Has a Translator** 10 (Book Translator trans., 2021).]
+This sentence has a footnote with a book with a pincite (and a translator).^[**Book Lauthor**, **Book With a Translator: This Book Has a Translator** §\ 35.10 (Book Translator trans., 2021).]
 This sentence has a footnote with a chapter with a pincite.^[Chapter Author, *Another Book Chapter Title: The Chapter of a Book*, *in* 15 **The Title of the Chapter Book** 101, 101 (5th ed., Book Editor ed., 2021) [hereinafter Author, *Another Book Chapter Title*].]
 This sentence has a footnote with a journal article with a pincite (and a year for a volume).^[Article Cauthor, *Journal Article With a Year Volume: This Journal Uses Years as Volumes*, 2021 **The Other J. J. Articles** 501, 501.]
 This sentence has a footnote with a munscript and a pincite (and the manuscript is not forthcoming).^[Manuscipt Author, *Not Yet Forthcoming Manuscript: This Manuscript Is Not Yet Placed* (forthcoming 2021) (manuscript at 10) [hereinafter Author, *Not Yet*].]
@@ -649,7 +726,7 @@ No signal.^[Plaintiff J v. Defendant J, 10 F.3d 1000, 1001 (10th Cir. 2000).]
 `*cf., e.g.*,` signal.^[*Id.* at 1003; *cf., e.g.*, *id.* at 1004.]
 `cf., e.g.,` signal.^[Lead in, cf., e.g., *id.* at 1005.]
 
-`*Compare*` signal.^[*Compare* *id.* at 1002, *with* *id.* at 1002.]
+`*Compare*` signal.^[*Compare* *id.* at 1002, *with* *id.*]
 `*compare*` signal.^[*Id.* at 1003; *compare* *id.* at 1004.]
 `compare` signal.^[Lead in, compare *id.* at 1005.]
 

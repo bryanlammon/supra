@@ -23,7 +23,7 @@ pub fn build_user_journals(input: &str) -> Result<UserJournals, String> {
 }
 
 #[cfg(test)]
-mod tets {
+mod tests {
     use super::*;
 
     #[test]

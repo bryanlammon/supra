@@ -351,7 +351,7 @@ fn valid_char(x: &char) -> bool {
 }
 
 #[cfg(test)]
-mod tets {
+mod tests {
     use super::*;
 
     #[test]
