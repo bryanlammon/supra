@@ -281,10 +281,7 @@ fn render_branch(
                     Color::Red.paint("ERRO"),
                     crossref.contents
                 );
-                #[cfg(not(test))]
-                std::process::exit(1);
-                #[cfg(test)]
-                std::process::exit(0);
+                crossref.contents.to_string()
             }
         }
 
