@@ -24,7 +24,7 @@ pub static BLANK_USER_JOURNAL_CONTENTS: &str = r#"// Enter your own journal abbr
 /// Contents of the Supra Makefile created with new projects.
 pub static MAKEFILE_CONTENTS: &str = r#"# Supra Makefile
 
-.PHONY: all docx docx_cs md
+.PHONY: all docx docx_wide docx_cs md
 
 MAKEFLAGS += --silent
 
@@ -35,28 +35,46 @@ source_dir := ./src/
 build_dir := ./build/
 
 source_file := $(source_dir)$(current_dir).md
+
 md_file := $(build_dir)$(current_dir).md
 docx_file := $(build_dir)$(current_dir).docx
+docx_file_wide := $(build_dir)$(current_dir)-wide.docx
 docx_file_cs :=$(build_dir)$(current_dir)-cs.docx
 
-docx_reference_book := ../_build-tools/supra-reference-cormorant.docx
+docx_reference_eb := ../_build-tools/supra-reference-eb-garamond.docx
+docx_reference_eb_wide := ../_build-tools/supra-reference-eb-garamond-wide.docx
 docx_reference_cs := ../_build-tools/supra-reference-cs.docx
 supra_lib = ../_build-tools/my-library.json
 
-all: $(docx_file) $(docx_file_cs)
+all: $(docx_file) $(docx_file_wide) $(docx_file_cs)
 
 build_tools :=\
 	Makefile \
-	$(docx_reference_book) \
+	$(docx_reference_eb) \
 	$(docx_reference_cs) \
+	$(docx_reference_cs_wide) \
 	$(supra_lib)
+
+$(md_file): $(source_file) $(build_tools)
+	supra \
+	$(source_file) \
+	$(supra_lib) \
+	$(md_file)
 
 $(docx_file): $(source_file) $(build_tools)
 	supra \
 	$(source_file) \
 	$(supra_lib) \
 	$(docx_file) \
-	$(docx_reference_book) \
+	$(docx_reference_eb) \
+	-scatnr
+
+$(docx_file_wide): $(source_file) $(build_tools)
+	supra \
+	$(source_file) \
+	$(supra_lib) \
+	$(docx_file_wide) \
+	$(docx_reference_eb_wide) \
 	-scatnr
 
 $(docx_file_cs): $(source_file) $(build_tools)
@@ -67,17 +85,14 @@ $(docx_file_cs): $(source_file) $(build_tools)
 	$(docx_reference_cs) \
 	-scatnr
 
-$(md_file): $(source_file) $(build_tools)
-	supra \
-	$(source_file) \
-	$(supra_lib) \
-	$(md_file)
-
 docx: $(docx_file)
+
+docx_wide: $(docx_file_wide)
 
 docx_cs: $(docx_file_cs)
 
-md: $(md_file)"#;
+md: $(md_file)
+"#;
 
 /// Conents of the Supra Markdown template created with new projects.
 pub static MD_CONTENTS: &str = r#"---
