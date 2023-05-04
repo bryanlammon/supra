@@ -2,10 +2,6 @@
 
 Supra lets you write legal scholarship in Markdown.
 
-- [About](#about)
-- [Setup \& Usage](#setup--usage)
-- [Changelog](#changelog)
-
 ## About
 
 Supra is a [Pandoc](https://pandoc.org) wrapper for writing legal scholarship in Markdown.
