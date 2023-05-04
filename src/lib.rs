@@ -1,10 +1,10 @@
-//! Contains the main Supra function. Determines which part of Supra to run.
+//! Contains the main Supra function. Determines which parts of Supra to run.
 
 pub mod config;
 mod fs;
 mod pan;
 mod post;
-mod pre;
+pub mod pre;
 
 use crate::config::Output;
 use ansi_term::Color;
@@ -13,17 +13,18 @@ use fs::load_file;
 use slog::{debug, error, o};
 use std::{path::Path, process};
 
+/// The main Supra function.
 pub fn supra(config: SupraConfig) -> Result<(), String> {
-    // Check commands
+    // Check subcommands.
     match config.command {
         SupraCommand::NewUserJournalFile => {
             debug!(slog_scope::logger(), "Creating blank user-journal file");
             fs::new_user_journals_ron();
             return Ok(());
         }
-        SupraCommand::NewProject(name, overwrite) => {
+        SupraCommand::NewProject(name, overwrite, git) => {
             debug!(slog_scope::logger(), "Creating new project");
-            fs::new_project(name, overwrite);
+            fs::new_project(name, overwrite, git);
             return Ok(());
         }
         SupraCommand::ReplaceMake => {
@@ -31,9 +32,7 @@ pub fn supra(config: SupraConfig) -> Result<(), String> {
             fs::replace_make();
             return Ok(());
         }
-        SupraCommand::Main => (
-            // TODO
-        ),
+        _ => {}
     }
 
     eprintln!("{} Starting Supra...", Color::Green.paint("INFO"));

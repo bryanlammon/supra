@@ -30,6 +30,7 @@ pub struct CSLSource {
     pub container_title: Option<String>,
     #[serde(rename(deserialize = "container-title-short"))]
     pub container_title_short: Option<String>,
+    pub authority: Option<String>,
     pub edition: Option<String>,
     pub page: Option<String>,
     pub title: Option<String>,
@@ -38,6 +39,7 @@ pub struct CSLSource {
     #[serde(rename(deserialize = "URL"))]
     pub url: Option<String>,
     pub volume: Option<String>,
+    pub references: Option<String>,
 }
 
 /// Struct holding the CSL JSON `name-variable` data.

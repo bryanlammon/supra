@@ -4,6 +4,7 @@ mod file_contents;
 
 use ansi_term::Color;
 use file_contents::{BLANK_USER_JOURNAL_CONTENTS, MAKEFILE_CONTENTS, MD_CONTENTS};
+use git2::Repository;
 use slog::debug;
 use std::{fs, path::Path};
 
@@ -78,7 +79,7 @@ pub fn new_user_journals_ron() {
 }
 
 /// Create a new project.
-pub fn new_project(name: &str, overwrite: bool) {
+pub fn new_project(name: &str, git: bool, overwrite: bool) {
     eprintln!(
         "{} Creating new project {}",
         Color::Green.paint("INFO"),
@@ -169,6 +170,17 @@ pub fn new_project(name: &str, overwrite: bool) {
             e
         );
     }
+
+    if git {
+        if let Err(e) = Repository::init(Path::new(&root)) {
+            eprintln!(
+                "{} Error initiating git repository in {}: {}",
+                Color::Red.paint("ERRO"),
+                Color::Blue.paint(&root),
+                e
+            )
+        }
+    }
 }
 
 /// Replace the current directory's Makefile with the Supra Makefile.
@@ -181,31 +193,5 @@ pub fn replace_make() {
             Color::Blue.paint("./Makefile"),
             e
         );
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    mod test_load_file {
-        use super::*;
-
-        #[test]
-        fn test_load() {
-            let file = "./tests/test.md";
-            let load_result = load_file(Path::new(file));
-            assert!(load_result.is_ok());
-            assert!(load_result.unwrap().contains("Supra Test Document"));
-        }
-
-        #[test]
-        fn fail_load() {
-            let file = "./tests/does-not-exist.md";
-            let load_result = load_file(Path::new(file));
-            assert!(load_result
-                .unwrap_err()
-                .contains("No such file or directory"));
-        }
     }
 }

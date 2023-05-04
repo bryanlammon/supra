@@ -1,4 +1,4 @@
-//! `main.rs` contains the command-line interface for supra. It collects the
+//! `main.rs` contains the command-line interface for Supra. It collects the
 //! values and options, sets up the logger, assembles the configuration, and
 //! passes everything to the main function.
 
@@ -11,7 +11,7 @@ use slog::{debug, Drain, Level};
 use std::{fs::OpenOptions, process, sync::Mutex};
 use supra::config::{Output, PanConfig, PostConfig, PreConfig, SupraCommand, SupraConfig};
 
-fn main() -> Result<(), String> {
+fn main() {
     // Get the command-line arguments and options
     let matches = App::new("supra")
         .version(crate_version!())
@@ -88,7 +88,7 @@ fn main() -> Result<(), String> {
             Arg::with_name("author_note")
                 .short('a')
                 .long("author")
-                .help("Add an author footnote (requires .ron file with contents)"),
+                .help("Add an author footnote (requires author note metadata)"),
         )
         .arg(
             Arg::with_name("tabbed_footnotes")
@@ -106,9 +106,7 @@ fn main() -> Result<(), String> {
             Arg::with_name("running_header")
                 .short('r')
                 .long("header")
-                .help(
-                    "Add a year and running title to the header (requires .ron file with contents)",
-                ),
+                .help("Add a year and running title to the header (requires header metadata)"),
         )
         .arg(
             Arg::with_name("debug")
@@ -145,6 +143,13 @@ fn main() -> Result<(), String> {
                         .help("The name of your new project")
                         .required(true)
                         .min_values(1),
+                )
+                .arg(
+                    Arg::with_name("git")
+                        .short('g')
+                        .long("git")
+                        .takes_value(false)
+                        .help("Initialize a git repository"),
                 )
                 .arg(
                     Arg::with_name("force_overwrite")
@@ -230,6 +235,7 @@ fn main() -> Result<(), String> {
             let name = vals[0];
 
             // Error correction for invalid characters in the name.
+            //
             // # % & { } \ < > * ? / $ ! ' " : @ + ` | =
             if !valid_name(name) {
                 eprintln!(
@@ -240,9 +246,10 @@ fn main() -> Result<(), String> {
                 process::exit(1);
             }
 
+            let git = sub_matches.is_present("git");
             let overwrite = sub_matches.is_present("force_overwrite");
 
-            SupraCommand::NewProject(name, overwrite)
+            SupraCommand::NewProject(name, git, overwrite)
         }
         Some(("rmake", _)) => SupraCommand::ReplaceMake,
         _ => SupraCommand::Main,
@@ -250,7 +257,7 @@ fn main() -> Result<(), String> {
 
     let config = match command {
         SupraCommand::NewUserJournalFile => SupraConfig::new(command, None, None, None, None),
-        SupraCommand::NewProject(_, _) => SupraConfig::new(command, None, None, None, None),
+        SupraCommand::NewProject(_, _, _) => SupraConfig::new(command, None, None, None, None),
         SupraCommand::ReplaceMake => SupraConfig::new(command, None, None, None, None),
         SupraCommand::Main => {
             // Files
@@ -328,7 +335,7 @@ fn main() -> Result<(), String> {
     // Run the program.
     let _ = supra::supra(config);
 
-    Ok(())
+    process::exit(0);
 }
 
 /// Tests a project name for valid characters.
@@ -352,7 +359,7 @@ fn valid_char(x: &char) -> bool {
 }
 
 #[cfg(test)]
-mod tets {
+mod tests {
     use super::*;
 
     #[test]
