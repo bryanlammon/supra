@@ -377,10 +377,10 @@ Supra comes with a few custom reference files, all of which work with all of Sup
 Both are formatted to look similar to published law review articles.
 `supra-reference-cs.docx` is typeset in Century Schoolbook, and it has the wide margins you often see in PDFs of published articles.
 It's a good default option.
-`supra-reference-cormorant.docx` is my preference.
+`supra-reference-eb-garamond.docx` is my preference.
 It is styled a little differently and uses narrow margins for easy reading on a tablet.
-It also requires that you have the fonts Cormorant Garamond and Cormorant SC installed.
-You can download those [here](https://github.com/CatharsisFonts/Cormorant).
+It also requires that you have the fonts EB Garamond and EB Garamond SC installed.
+You can download those [here](https://github.com/georgd/EB-Garamond).
 
 ### Post-Processing Options
 
@@ -498,7 +498,7 @@ For example:
 ┣ 📂 _build-tools
 ┃ ┣ 📄 my-library.json
 ┃ ┣ 📄 supra
-┃ ┗ 📄 supra-reference-cormorant.docx
+┃ ┗ 📄 supra-reference-eb-garamond.docx
 ┃
 ┣ 📂 project_1
 ┃ ┣ 📂 build
