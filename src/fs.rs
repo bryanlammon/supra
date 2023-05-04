@@ -4,6 +4,7 @@ mod file_contents;
 
 use ansi_term::Color;
 use file_contents::{BLANK_USER_JOURNAL_CONTENTS, MAKEFILE_CONTENTS, MD_CONTENTS};
+use git2::Repository;
 use slog::debug;
 use std::{fs, path::Path};
 
@@ -78,7 +79,7 @@ pub fn new_user_journals_ron() {
 }
 
 /// Create a new project.
-pub fn new_project(name: &str, overwrite: bool) {
+pub fn new_project(name: &str, git: bool, overwrite: bool) {
     eprintln!(
         "{} Creating new project {}",
         Color::Green.paint("INFO"),
@@ -168,6 +169,17 @@ pub fn new_project(name: &str, overwrite: bool) {
             Color::Blue.paint(&build),
             e
         );
+    }
+
+    if git {
+        if let Err(e) = Repository::init(Path::new(&root)) {
+            eprintln!(
+                "{} Error initiating git repository in {}: {}",
+                Color::Red.paint("ERRO"),
+                Color::Blue.paint(&root),
+                e
+            )
+        }
     }
 }
 
