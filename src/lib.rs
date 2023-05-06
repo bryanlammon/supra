@@ -22,9 +22,9 @@ pub fn supra(config: SupraConfig) -> Result<(), String> {
             fs::new_user_journals_ron();
             return Ok(());
         }
-        SupraCommand::NewProject(name, overwrite, git) => {
+        SupraCommand::NewProject(name, overwrite) => {
             debug!(slog_scope::logger(), "Creating new project");
-            fs::new_project(name, overwrite, git);
+            fs::new_project(name, overwrite);
             return Ok(());
         }
         SupraCommand::ReplaceMake => {

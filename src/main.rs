@@ -144,13 +144,13 @@ fn main() {
                         .required(true)
                         .min_values(1),
                 )
-                .arg(
-                    Arg::with_name("git")
-                        .short('g')
-                        .long("git")
-                        .takes_value(false)
-                        .help("Initialize a git repository"),
-                )
+                //.arg(
+                //    Arg::with_name("git")
+                //        .short('g')
+                //        .long("git")
+                //        .takes_value(false)
+                //        .help("Initialize a git repository"),
+                //)
                 .arg(
                     Arg::with_name("force_overwrite")
                         .short('W')
@@ -212,7 +212,7 @@ fn main() {
     };
 
     debug!(slog_scope::logger(), "Logger setup");
-
+    //
     // Determine which command to run
     let command = match matches.subcommand() {
         Some(("uj", _)) => SupraCommand::NewUserJournalFile,
@@ -246,10 +246,10 @@ fn main() {
                 process::exit(1);
             }
 
-            let git = sub_matches.is_present("git");
+            //let git = sub_matches.is_present("git");
             let overwrite = sub_matches.is_present("force_overwrite");
 
-            SupraCommand::NewProject(name, git, overwrite)
+            SupraCommand::NewProject(name, overwrite)
         }
         Some(("rmake", _)) => SupraCommand::ReplaceMake,
         _ => SupraCommand::Main,
@@ -257,7 +257,7 @@ fn main() {
 
     let config = match command {
         SupraCommand::NewUserJournalFile => SupraConfig::new(command, None, None, None, None),
-        SupraCommand::NewProject(_, _, _) => SupraConfig::new(command, None, None, None, None),
+        SupraCommand::NewProject(_, _) => SupraConfig::new(command, None, None, None, None),
         SupraCommand::ReplaceMake => SupraConfig::new(command, None, None, None, None),
         SupraCommand::Main => {
             // Files

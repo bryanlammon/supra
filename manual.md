@@ -536,13 +536,6 @@ It also provides a space to write an abstract, using the abstract formatting in 
 supra new article
 ```
 
-If you want to initiate a [git repository](https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository) in the project folder, add the option `-g` or `--git`.
-
-```sh
-# Make a new project called article and initiate a git repository
-supra new article -g
-```
-
 Three notes about the `new` subcommand.
 First, the name cannot contain any spaces or characters that shouldn't go in directory or file names.
 Second, the default Supra Makefile expects both of Supra's custom references to be in your `_build-tools/` folder.
