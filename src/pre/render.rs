@@ -146,18 +146,24 @@ fn render_branch(
                     false => contents.push_str("*id.*"),
                 }
 
+                // If there's nothing after the *Id.*, don't render any
+                // subsequent punctuation.
                 render_punctuation = false;
 
-                // Add a pin, if any.
+                // If there's a pincite AND it's different from the last
+                // pincite, add a pin.
                 if citation.pincite.is_some()
                     && citation.pincite.as_ref().unwrap() != &last_citation.last_pin
                 {
                     contents.push_str(" at ");
                     contents.push_str(citation.pincite.as_ref().unwrap());
 
-                    last_citation.last_pin = citation.pincite.as_ref().unwrap().to_string();
+                    //last_citation.last_pin =
+                    //citation.pincite.as_ref().unwrap().to_string();
 
-                    // There's something between the *Id.* and the punctuation.
+                    // There's something between the *Id.* and the punctuation,
+                    // so the period in the *Id.* can't be the ending
+                    // punctuation.
                     render_punctuation = true;
                 }
             } else if source_map[citation.reference].source_type == SourceType::Case {
@@ -230,7 +236,7 @@ fn render_branch(
                 contents.push_str(&source_map[citation.reference].short_cite_no_pin());
             }
 
-            // Reardless of the cite type.
+            // Regardless of the cite type.
             if citation.parenthetical.is_some() {
                 contents.push(' ');
                 contents.push_str(citation.parenthetical.unwrap());
@@ -238,8 +244,10 @@ fn render_branch(
                 render_punctuation = true;
             }
 
-            // Then add the punctuation unless (1)\ the cite was an *Id*, (2)\ there was no pincite or parenthetical, and (3)\ the puncutation is `.`.
-            if render_punctuation {
+            // Then add the punctuation unless (1)\ (a)\ the cite was an *Id.*,
+            // and (b)\ there was no pincite or parenthetical, OR (2)\ the
+            // puncutation is not `.`.
+            if render_punctuation || citation.punctuation != "." {
                 contents.push_str(citation.punctuation)
             };
 
@@ -258,6 +266,11 @@ fn render_branch(
                 last_citation
                     .sources
                     .push(source_map[citation.reference].id.clone());
+            }
+
+            // If there was a pincite, update that.
+            if citation.pincite.is_some() {
+                last_citation.last_pin = citation.pincite.as_ref().unwrap().to_string();
             }
 
             // Then, if the latest's sources punctuation ends a clause, close

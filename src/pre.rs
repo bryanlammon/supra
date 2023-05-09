@@ -494,12 +494,13 @@ mod tests {
             }
         }
 
+        /// Test *Id.* usage with a string cite.
         #[test]
         fn id_string() {
             let input = r#######"
                 1. Article A.^[[@cauthorJournalArticleYear2021] at 501.]
 
-                2. Articles A & B.^[[@cauthorJournalArticleYear2021] at 502; [@dauthorTwoAuthorJournalArticle2021] at 110.]
+                2. Articles A & B.^[[@cauthorJournalArticleYear2021] at 501; [@dauthorTwoAuthorJournalArticle2021] at 110.]
 
                 3. Article B.^[[@dauthorTwoAuthorJournalArticle2021] at 111.]
                 "#######;
@@ -507,7 +508,7 @@ mod tests {
             let output = r#######"
                 1. Article A.^[Article Cauthor, *Journal Article With a Year Volume: This Journal Uses Years as Volumes*, 2021 **The Other J. J. Articles** 501, 501.]
 
-                2. Articles A & B.^[*Id.* at 502; Article Dauthor, Jr. & Article III Fauthor, *Two-Author Journal Article: This Article Has Two Authors*, 51 **J. J. Articles** 101, 110 (2021).]
+                2. Articles A & B.^[*Id.*; Article Dauthor, Jr. & Article III Fauthor, *Two-Author Journal Article: This Article Has Two Authors*, 51 **J. J. Articles** 101, 110 (2021).]
 
                 3. Article B.^[Dauthor & Fauthor, *supra* note 2, at 111.]
                 "#######;
