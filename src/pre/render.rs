@@ -158,9 +158,6 @@ fn render_branch(
                     contents.push_str(" at ");
                     contents.push_str(citation.pincite.as_ref().unwrap());
 
-                    //last_citation.last_pin =
-                    //citation.pincite.as_ref().unwrap().to_string();
-
                     // There's something between the *Id.* and the punctuation,
                     // so the period in the *Id.* can't be the ending
                     // punctuation.
@@ -236,7 +233,7 @@ fn render_branch(
                 contents.push_str(&source_map[citation.reference].short_cite_no_pin());
             }
 
-            // Regardless of the cite type.
+            // Parenthetical, regardless of the cite type.
             if citation.parenthetical.is_some() {
                 contents.push(' ');
                 contents.push_str(citation.parenthetical.unwrap());

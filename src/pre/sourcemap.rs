@@ -40,11 +40,9 @@ pub struct Source<'a> {
     pub id: String,
     pub source_type: SourceType,
     pub all_footnotes: Vec<i32>,
-    //pub first_page: Option<String>,
     pub long_cite_no_pin: Option<String>,
     pub long_cite_w_pin: Option<(String, String)>,
     pub short_author: Option<String>,
-    //pub short_cite: Option<String>,
     pub short_cite_no_pin: Option<String>,
     pub short_cite_w_pin: Option<String>,
     pub cited: bool,
@@ -232,7 +230,8 @@ fn start_source_map<'a>(csl_library: &'a [CSLSource], tree: &'a [Branch]) -> Sou
                     );
                     let csl_source = csl_source.unwrap();
 
-                    // If there's no type in the CSL JSON library, log the error and continue to the next iteration of the loop.
+                    // If there's no type in the CSL JSON library, log the error
+                    // and continue to the next iteration of the loop.
                     if csl_source.source_type.is_none() {
                         warn!(
                             slog_scope::logger(),

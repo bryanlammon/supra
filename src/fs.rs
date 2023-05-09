@@ -34,7 +34,8 @@ pub fn load_file(path: &Path) -> Result<String, String> {
 
 /// Save a string in a file.
 ///
-/// This function saves the provided string to a file. It is used when outputting to Markdown.
+/// This function saves the provided string to a file. It is used when
+/// outputting to Markdown.
 pub fn save_file(path: &Path, output: &str) -> Result<(), String> {
     debug!(slog_scope::logger(), "Saving {}...", path.to_string_lossy());
     eprintln!(
@@ -106,7 +107,8 @@ pub fn new_project(name: &str, overwrite: bool) {
         );
     };
 
-    // Try to create the Makefile. If it exists and overwrite is not set, note a warning.
+    // Try to create the Makefile. If it exists and overwrite is not set, note a
+    // warning.
     if Path::new(&makefile).exists() && !overwrite {
         eprintln!(
             "{} Cannot create {}: File exists (use -W to force overwrite)",
@@ -168,16 +170,12 @@ pub fn new_project(name: &str, overwrite: bool) {
         );
     }
 
-    //if git {
-    //    if let Err(e) = Repository::init(Path::new(&root)) {
-    //        eprintln!(
-    //            "{} Error initiating git repository in {}: {}",
-    //            Color::Red.paint("ERRO"),
-    //            Color::Blue.paint(&root),
-    //            e
-    //        )
-    //    }
-    //}
+    // Git functionality is currently disabled, as it breaks continuous
+    // deployment for MacOS.
+    //
+    //if git { if let Err(e) = Repository::init(Path::new(&root)) { eprintln!(
+    //    "{} Error initiating git repository in {}: {}",
+    //        Color::Red.paint("ERRO"), Color::Blue.paint(&root), e ) } }
 }
 
 /// Replace the current directory's Makefile with the Supra Makefile.
@@ -202,10 +200,7 @@ mod file_contents {
 // abbreviation. Put each journal on a separate line, with commas after every
 // line. Below is an example:
 //
-// {
-//  "Journal of Stuff":"J. Stuff",
-//  "Journal of More Stuff":"J. More Stuff",
-// }
+// { "Journal of Stuff":"J. Stuff", "Journal of More Stuff":"J. More Stuff", }
 //
 // There is also a placeholder example below. Feel free to replace that with
 // your own journals.

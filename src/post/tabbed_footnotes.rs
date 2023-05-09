@@ -16,15 +16,6 @@ pub fn tabbed_footnotes(mut fns: String) -> Result<String, String> {
     // Replace all of the spaces with tabs
     fns = re.replace_all(&fns, replace).to_string();
 
-    //// In case an author footnote was added....
-    ////
-    //// Note, the escapes in the find are necessary because the previous regex
-    //// will have added them.
-    //let au_find = r#"</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t>"#;
-    //let au_replace = r#"</w:t></w:r><w:r><w:tab/>"#;
-    //let re = Regex::new(au_find).unwrap();
-    //fns = re.replace(&fns, au_replace).to_string();
-
     debug!(slog_scope::logger(), "Footnotes tabbed.");
     Ok(fns)
 }

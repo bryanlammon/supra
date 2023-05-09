@@ -40,10 +40,6 @@ pub fn read_docx(path: &Path) -> Result<(String, String, String, String), String
         .unwrap();
 
     let mut h1 = String::new();
-    //docx.by_name("word/header1.xml")
-    //    .unwrap()
-    //    .read_to_string(&mut h1)
-    //    .unwrap();
     if let Ok(mut z) = docx.by_name("word/header1.xml") {
         z.read_to_string(&mut h1).unwrap();
     } else {
@@ -51,10 +47,6 @@ pub fn read_docx(path: &Path) -> Result<(String, String, String, String), String
     }
 
     let mut h2 = String::new();
-    //docx.by_name("word/header2.xml")
-    //    .unwrap()
-    //    .read_to_string(&mut h2)
-    //    .unwrap();
     if let Ok(mut z) = docx.by_name("word/header2.xml") {
         z.read_to_string(&mut h2).unwrap();
     } else {

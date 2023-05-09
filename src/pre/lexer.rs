@@ -234,16 +234,13 @@ fn footnote_lexer(input: &str) -> Result<Vec<Token>, String> {
     // Determine the starting block. It could be an ID, text (including pre-cite
     // text), a citation, or a cite braker.
     if input.as_bytes().get(2) == Some(&b'[') && input.as_bytes().get(3) == Some(&b'?') {
-        // The start is an ID.
         lexer.context = Context::ID;
     } else if input.as_bytes().get(2) == Some(&b'[') && input.as_bytes().get(3) == Some(&b'@') {
-        // The start is a citation.
         lexer.context = Context::Citation;
         // The number of open brackets needs to account for the opening footnote
         // bracket.
         lexer.open_brackets = -1;
     } else if input.as_bytes().get(2) == Some(&b'[') && input.as_bytes().get(3) == Some(&b'$') {
-        // The start is a cite breaker.
         lexer.context = Context::CiteBreak;
     } else {
         lexer.context = Context::Text;
@@ -415,7 +412,8 @@ fn footnote_lexer(input: &str) -> Result<Vec<Token>, String> {
                     lex.push(Token::new(TokenType::Text, &input[lexer.start..i]));
                 }
             } else {
-                // If the footnote lexer ends on something other than Text, then there's probably no punctuation in the citation.
+                // If the footnote lexer ends on something other than Text, then
+                // there's probably no punctuation in the citation.
                 return Err(format!(
                     "Something is wrong with the footnote \"{:?}\", probably a citation without ending punctuation.",
                     input

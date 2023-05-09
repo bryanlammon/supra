@@ -33,12 +33,6 @@ pub fn post(
     running_header: bool,
 ) -> Result<(), String> {
     debug!(slog_scope::logger(), "Starting post-processor...");
-
-    // input is the .md file that contains the yaml block and metadata.
-    // output is the .docx file.
-    //
-    // These variables need renaming... TODO
-
     // Get any necessary metadata
     let mut metadata: Metadata = Metadata {
         title: None,

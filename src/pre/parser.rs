@@ -15,6 +15,7 @@ pub enum Branch<'a> {
 }
 
 impl Branch<'_> {
+    /// Used for debugging.
     #[allow(dead_code)]
     fn print_contents(&self) -> String {
         match self {

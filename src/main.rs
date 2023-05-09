@@ -144,13 +144,12 @@ fn main() {
                         .required(true)
                         .min_values(1),
                 )
-                //.arg(
-                //    Arg::with_name("git")
-                //        .short('g')
-                //        .long("git")
-                //        .takes_value(false)
-                //        .help("Initialize a git repository"),
-                //)
+                // Git functionality is currently disabled, as it breaks
+                // continuous deployment for MacOS.
+                //
+                //.arg( Arg::with_name("git") .short('g') .long("git")
+                //    .takes_value(false) .help("Initialize a git repository"),
+                //        )
                 .arg(
                     Arg::with_name("force_overwrite")
                         .short('W')

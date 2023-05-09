@@ -47,7 +47,8 @@ pub fn pre<'a>(
         Err(e) => return Err(e),
     };
 
-    // If there's a user journals list, deserialize it into the user journals map.
+    // If there's a user journals list, deserialize it into the user journals
+    // map.
     let user_journals = match user_journals {
         Some(s) => {
             match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "parser()")), || {
