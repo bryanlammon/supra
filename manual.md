@@ -103,7 +103,7 @@ That means it does not (yet) abbreviate case names or check for the correct form
 
 #### Zotero + Better BibTex
 
-Probably the easiest way to set up a source library is by to use [Zotero](https://www.zotero.org) (for reference management) and the [Better BibTeX for Zotero](https://retorque.re/zotero-better-bibtex/) plugin (to automatically create and update the source library).
+Probably the easiest way to set up a source library is to use [Zotero](https://www.zotero.org) (for reference management) and the [Better BibTeX for Zotero](https://retorque.re/zotero-better-bibtex/) plugin (to automatically create and update the source library).
 Instructions for installing Zotero are available on [Zotero's website](https://www.zotero.org/support/installation).
 After installing Zotero, you can then install the Better BibTeX for Zotero plugin by following the instructions on the [plugin's website](https://retorque.re/zotero-better-bibtex/installation/).
 
@@ -179,7 +179,7 @@ Some text.^[*See* [@Smith2004] 123.]
 
 Some more text.^[*See also* [@Jones2003] at 123 n.4.]
 
-Even more text.^[*See* [@Smith2004] 123; [@Williams1990] § \ 3944.]
+Even more text.^[*See* [@Smith2004] 123; [@Williams1990] §\ 3944.]
 
 # You can use "tk" for unknown page numbers (e.g., forthcoming articles)
 I'm not sure what page I'm referring to yet.^[*But see* [@Johnson2021] at tk.]
@@ -291,7 +291,7 @@ This option can be set with `-s` or `--smallcaps`.
 
 This is useful only if the output docx file has a "Small Caps" style.
 So a [custom reference file](https://pandoc.org/MANUAL.html#option--reference-doc) that includes this style is necessary.
-Both of Supra's supplied custom references include a "Small Caps" style (though the Century Schoolbook custom reference does not use true small caps; it uses Word's built-in small caps functionality).
+Supra's supplied custom references include a "Small Caps" style (though the Century Schoolbook custom reference does not use true small caps; it uses Word's built-in small caps functionality).
 
 #### Offsetting
 
@@ -372,7 +372,7 @@ Supra comes with a few custom reference files, all of which work with all of Sup
 
 * [`supra-reference-cs.docx`](https://github.com/bryanlammon/supra/blob/main/supra-reference-cs.docx), which uses common legal scholarship formatting;
 * [`supra-reference-eb-garamond.docx`](https://github.com/bryanlammon/supra/blob/main/supra-reference-eb-garamond.docx), which uses my preferred formatting; and
-* [`supra-reference-eb-garamond-wide.docx`](https://github.com/bryanlammon/supra/blob/main/supra-reference-eb-garamond-wide.docx), which uses my preferred formatting but adds wide margins; and
+* [`supra-reference-eb-garamond-wide.docx`](https://github.com/bryanlammon/supra/blob/main/supra-reference-eb-garamond-wide.docx), which uses my preferred formatting but adds wide margins.
 
 Both are formatted to look similar to published law review articles.
 `supra-reference-cs.docx` is typeset in Century Schoolbook, and it has the wide margins you often see in PDFs of published articles.
@@ -486,7 +486,7 @@ Supra can work with whatever project organization you want to use.
 But it facilitates a particular approach that I've found useful.
 
 At the root of this organization is a folder for all current research projects.
-Each project is then in its own folder that is named after the project.
+Each project is in its own folder that is named after the project.
 Alongside all of the projects is a `_build-tools/` folder that contains Supra, your CSL JSON library, and Supra's custom references.
 Each project folder contains a [Makefile](https://www.gnu.org/software/make/manual/make.html) (for running Supra, discussed momentarily) and two sub-folders: `src/`, containing the Markdown file, and `build/`, which contains Supra's output.
 Both the Markdown file and output file share the project's name.
@@ -527,7 +527,7 @@ new
 
 If you use this structure, you can create new research projects with Supra's `new` subcommand.
 You just type `supra new <name>`, with `<name>` being the name for your project.
-Supra then creates a directory with that name, the `src/` and `build/` subdirectories, and a placeholder `.md` file and `Makefile`.
+Supra then creates a directory with that name, the `src/` and `build/` subdirectories, and a placeholder `.md` and `Makefile` files.
 The `.md` file already has a YAML metadata block ready to fill out.
 It also provides a space to write an abstract, using the abstract formatting in Supra's provided Pandoc custom references.
 
@@ -538,7 +538,7 @@ supra new article
 
 Three notes about the `new` subcommand.
 First, the name cannot contain any spaces or characters that shouldn't go in directory or file names.
-Second, the default Supra Makefile expects both of Supra's custom references to be in your `_build-tools/` folder.
+Second, the default Supra Makefile expects Supra's custom references to be in your `_build-tools/` folder.
 If one or both is missing, you'll need to edit the Makefile.
 And third, by default, Supra will not overwrite your Markdown file or Makefile.
 If you *really* want to overwrite the existing files, add the option `-W` or `--force_overwrite`.
@@ -569,7 +569,7 @@ supra rmake
 #### Sample Makefile
 
 If you don't use Supra's model project structure, you can still write your own Makefile.
-Below is adapted from the one I use.
+Below is an example adapted from Supra's.
 The `.md` input and `.docx` output go in separate directories inside a project.
 The Supra library and Pandoc custom reference reside in a `/_build-tools/` directory that sits one level up, next to all of the project folders.
 
