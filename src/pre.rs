@@ -495,6 +495,26 @@ mod tests {
             }
         }
 
+        /// Test *id.* with the same source cited twice in a row, separated by a
+        /// semicolon.
+        #[test]
+        fn id_twice_semicolon() {
+            let input = r#######"
+                1. Case C twice.^[Text. [@PlaintiffDefendant1991] at 10; [@PlaintiffDefendant1991] at 12.]
+                "#######;
+
+            let output = r#######"
+                1. Case C twice.^[Text. Plaintiff A v. Defendant A, 100 F.3d 1, 10 (1st Cir. 1991); *id.* at 12.]
+                "#######;
+
+            let pre = pre(input, test_inputs::TESTJSON, &None, 0, false).unwrap();
+            let target_lines: Vec<&str> = output.lines().collect();
+
+            for (i, line) in pre.lines().enumerate() {
+                assert_eq!(line, target_lines[i])
+            }
+        }
+
         /// Test *Id.* usage with a string cite.
         #[test]
         fn id_string() {

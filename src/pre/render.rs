@@ -141,6 +141,13 @@ fn render_branch(
                     && &source_map[citation.reference].id == last_citation.sources.last().unwrap())
             {
                 // It's an *Id.*
+
+                // If we're in a citation clause, the *Id.* should be lowercase.
+                if !last_citation.closed {
+                    capitalize = false;
+                }
+
+                // Render the *Id.*
                 match capitalize {
                     true => contents.push_str("*Id.*"),
                     false => contents.push_str("*id.*"),
