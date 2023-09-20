@@ -211,7 +211,7 @@ mod file_contents {
 "#;
 
     /// Contents of the Supra Makefile created with new projects.
-    pub static MAKEFILE_CONTENTS: &str = r#"# Supra Makefile
+    pub static MAKEFILE_CONTENTS: &str = r"# Supra Makefile
 
 .PHONY: all docx docx_wide docx_cs md
 
@@ -281,7 +281,7 @@ docx_wide: $(docx_file_wide)
 docx_cs: $(docx_file_cs)
 
 md: $(md_file)
-"#;
+";
 
     /// Conents of the Supra Markdown template created with new projects.
     pub static MD_CONTENTS: &str = r#"---

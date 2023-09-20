@@ -22,6 +22,7 @@ struct Metadata {
     running_header: Option<String>,
 }
 
+#[allow(clippy::too_many_arguments)]
 /// The post-processor.
 pub fn post(
     md_input: &str,
@@ -31,6 +32,7 @@ pub fn post(
     tabbed_footnotes: bool,
     no_superscript: bool,
     running_header: bool,
+    ligatures: bool,
 ) -> Result<(), String> {
     debug!(slog_scope::logger(), "Starting post-processor...");
     // Get any necessary metadata
@@ -149,6 +151,11 @@ pub fn post(
         } else {
             return Err("Custom reference does not contain headers".to_string());
         }
+    }
+
+    // Th-ligature function
+    if ligatures {
+        todo!()
     }
 
     // Write the .docx file

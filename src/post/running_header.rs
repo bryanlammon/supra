@@ -10,7 +10,7 @@ pub fn running_header(
 ) -> Result<(String, String), String> {
     debug!(slog_scope::logger(), "Editing headers...");
 
-    let header_find = r#"\[.+?\]"#;
+    let header_find = r"\[.+?\]";
     let header_replace = running_header;
 
     let re1 = Regex::new(header_find).unwrap();
