@@ -2,6 +2,7 @@
 mod author_note;
 mod autocref;
 mod docx;
+mod ligatures;
 mod no_superscript;
 mod running_header;
 mod tabbed_footnotes;
@@ -155,7 +156,12 @@ pub fn post(
 
     // Ligatures function
     if ligatures {
-        todo!()
+        doc = match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "ligatures()")), || {
+            ligatures::ligatures(doc)
+        }) {
+            Ok(d) => d,
+            Err(e) => return Err(e),
+        }
     }
 
     // Write the .docx file
