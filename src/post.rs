@@ -2,7 +2,6 @@
 mod author_note;
 mod autocref;
 mod docx;
-mod ligatures;
 mod no_superscript;
 mod running_header;
 mod tabbed_footnotes;
@@ -23,7 +22,6 @@ struct Metadata {
     running_header: Option<String>,
 }
 
-#[allow(clippy::too_many_arguments)]
 /// The post-processor.
 pub fn post(
     md_input: &str,
@@ -33,7 +31,6 @@ pub fn post(
     tabbed_footnotes: bool,
     no_superscript: bool,
     running_header: bool,
-    ligatures: bool,
 ) -> Result<(), String> {
     debug!(slog_scope::logger(), "Starting post-processor...");
     // Get any necessary metadata
@@ -151,16 +148,6 @@ pub fn post(
             }
         } else {
             return Err("Custom reference does not contain headers".to_string());
-        }
-    }
-
-    // Ligatures function
-    if ligatures {
-        doc = match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "ligatures()")), || {
-            ligatures::ligatures(doc)
-        }) {
-            Ok(d) => d,
-            Err(e) => return Err(e),
         }
     }
 

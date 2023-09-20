@@ -109,12 +109,6 @@ fn main() {
                 .help("Add a year and running title to the header (requires header metadata)"),
         )
         .arg(
-            Arg::with_name("ligatures")
-                .short('l')
-                .long("ligatures")
-                .help("Add discretionary ligatures to \"Th\""),
-        )
-        .arg(
             Arg::with_name("debug")
                 .short('d')
                 .long("debug")
@@ -287,7 +281,6 @@ fn main() {
             let tabbed_footnotes = matches.is_present("tabbed_footnotes");
             let no_superscript = matches.is_present("no_superscript");
             let running_header = matches.is_present("running_header");
-            let ligatures = matches.is_present("ligatures");
 
             // Deal with command-line errors.
             //
@@ -326,7 +319,6 @@ fn main() {
                 tabbed_footnotes,
                 no_superscript,
                 running_header,
-                ligatures,
             );
 
             SupraConfig::new(
