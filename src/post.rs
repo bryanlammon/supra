@@ -153,7 +153,7 @@ pub fn post(
         }
     }
 
-    // Th-ligature function
+    // Ligatures function
     if ligatures {
         todo!()
     }
