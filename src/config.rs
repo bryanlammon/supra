@@ -95,6 +95,7 @@ pub struct PostConfig {
     pub tabbed_footnotes: bool,
     pub no_superscript: bool,
     pub running_header: bool,
+    pub ligatures: bool,
 }
 
 impl PostConfig {
@@ -105,6 +106,7 @@ impl PostConfig {
         tabbed_footnotes: bool,
         no_superscript: bool,
         running_header: bool,
+        ligatures: bool,
     ) -> PostConfig {
         PostConfig {
             autocref,
@@ -112,6 +114,7 @@ impl PostConfig {
             tabbed_footnotes,
             no_superscript,
             running_header,
+            ligatures,
         }
     }
 }

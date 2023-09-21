@@ -160,6 +160,7 @@ pub fn supra(config: SupraConfig) -> Result<(), String> {
                 config.post_config.as_ref().unwrap().tabbed_footnotes,
                 config.post_config.as_ref().unwrap().no_superscript,
                 config.post_config.as_ref().unwrap().running_header,
+                config.post_config.as_ref().unwrap().ligatures,
             )
         }) {
             Ok(p) => p,
