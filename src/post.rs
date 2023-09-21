@@ -156,12 +156,13 @@ pub fn post(
 
     // Ligatures function
     if ligatures {
-        doc = match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "ligatures()")), || {
-            ligatures::ligatures(doc)
-        }) {
-            Ok(d) => d,
-            Err(e) => return Err(e),
-        }
+        (doc, fns) =
+            match slog_scope::scope(&slog_scope::logger().new(o!("fn" => "ligatures()")), || {
+                ligatures::ligatures(doc, fns)
+            }) {
+                Ok(d) => d,
+                Err(e) => return Err(e),
+            }
     }
 
     // Write the .docx file
