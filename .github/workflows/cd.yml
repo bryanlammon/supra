@@ -26,5 +26,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           RUSTTARGET: ${{ matrix.target }}
-          EXTRA_FILES: "readme.md license.md supra-reference-cs.docx supra-reference-eb-garamond.docx supra-reference-eb-garamond-wide.docx"
+          EXTRA_FILES: "readme.md license.md ref/supra-reference-cs.docx ref/supra-reference-eb-garamond.docx ref/supra-reference-eb-garamond-wide.docx"
           ARCHIVE_TYPES: ${{ matrix.archive }}
