@@ -128,7 +128,7 @@ If multiple citations have the same author, Supra also adds a "hereinafter" to t
 Finally, Supra looks for cross-references in and to other footnotes.
 
 To do all of this, Supra uses a slightly extended (and slightly altered) version of [Pandoc's markdown](https://pandoc.org/MANUAL.html#pandocs-markdown), described below.
-So user's should be familiar with Pandoc's markdown.
+So users should be familiar with Pandoc's markdown.
 For most legal scholarship, only a few parts of that markdown will be relevant:
 
 * [Paragraphs](https://www.pandoc.org/MANUAL.html#paragraphs)
