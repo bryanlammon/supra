@@ -24,3 +24,4 @@ For instructions on how to setup Supra, markup a document, and run the program, 
 * 0.1.2: Updated documentation
 * 0.2.0: Added Pandoc and post-processing functionality
 * 0.3.0: Added support for cases and automatic `*Id.*`s.
+* 0.3.1: Fixed date-parts deserializing bug.
