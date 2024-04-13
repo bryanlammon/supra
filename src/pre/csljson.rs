@@ -1,6 +1,7 @@
 //! The module contains functionality related to creating the CSL libary.
 
-use serde::Deserialize;
+use serde::{de, Deserialize, Deserializer};
+use serde_json::Value;
 use slog::debug;
 
 /// Struct holding metadata for a source in a CSL JSON file.
@@ -55,10 +56,12 @@ pub struct NameVariable {
 /// Struct holding the CSL JSON `date-variable` data.
 ///
 /// Note, `date-parts` data is a collection of collections of one-to-three
-/// integers indicating the year, month, and day.
+/// values indicating the year, month, and day.
 #[derive(Debug, Deserialize)]
 pub struct DateVariable {
-    #[serde(rename(deserialize = "date-parts"))]
+    // It seems like BetterBibTex is outputting date parts as strings or
+    // integers, so the deserializer needs to deal with both.
+    #[serde(rename(deserialize = "date-parts"), deserialize_with = "de_date")]
     pub date_parts: Option<Vec<Vec<u32>>>,
     pub season: Option<u32>,
 }
@@ -77,6 +80,44 @@ pub fn build_csl_lib(csl_string: &str) -> Result<Vec<CSLSource>, String> {
             let err_msg = format!("error deserializing the CSL JSON—{}", e);
             Err(err_msg)
         }
+    }
+}
+
+/// Deserialize `date_parts`, which can be strings or u32s.
+///
+/// By April 2024, Supra stopped working because the years in the CSL JSON were
+/// strings. Sometime before that, the years were u32s.
+///
+/// This function is necessary to deserialize either a string or integer
+fn de_date<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Option<Vec<Vec<u32>>>, D::Error> {
+    let mut new_inner_vec: Vec<u32> = Vec::new();
+
+    match Value::deserialize(deserializer)? {
+        Value::Array(old_outer_vec) => {
+            match Value::deserialize(old_outer_vec[0].clone()).unwrap() {
+                Value::Array(old_inner_vec) => {
+                    for v in old_inner_vec {
+                        match Value::deserialize(v).unwrap() {
+                            Value::String(s) => {
+                                let u = s.parse::<u32>().map_err(de::Error::custom)?;
+                                new_inner_vec.push(u);
+                            }
+                            Value::Number(num) => {
+                                let u =
+                                    num.as_u64().ok_or(de::Error::custom("Invalid number"))? as u32;
+                                new_inner_vec.push(u);
+                            }
+                            _ => return Err(de::Error::custom("Wrong type")),
+                        }
+                    }
+
+                    let new_outer_vec = vec![new_inner_vec];
+                    Ok(Some(new_outer_vec))
+                }
+                _ => return Err(de::Error::custom("Wrong type")),
+            }
+        }
+        _ => return Err(de::Error::custom("Wrong type")),
     }
 }
 
@@ -674,5 +715,36 @@ mod tests {
     /// Test multiple translators.
     fn multi_translator() {
         // TODO
+    }
+
+    #[test]
+    /// Allow for both strings and integers as input for the date field, stored
+    /// as u32.
+    fn date_string() {
+        let json_string = r#"[
+                    {
+                        "id": "dateTest2021",
+                        "issued": {
+                            "date-parts": [
+                                [
+                                    "2021"
+                                ]
+                            ]
+                        }
+                    }
+                ]"#;
+
+        let result = build_csl_lib(json_string);
+
+        assert_eq!(
+            result.as_ref().unwrap()[0]
+                .issued
+                .as_ref()
+                .unwrap()
+                .date_parts
+                .as_ref()
+                .unwrap()[0][0],
+            2021
+        );
     }
 }
