@@ -63,7 +63,7 @@ pub struct DateVariable {
     // integers, so the deserializer needs to deal with both.
     #[serde(rename(deserialize = "date-parts"), deserialize_with = "de_date")]
     pub date_parts: Option<Vec<Vec<u32>>>,
-    pub season: Option<u32>,
+    //pub season: Option<u32>,
 }
 
 /// Deserialize the CSL JSON library.

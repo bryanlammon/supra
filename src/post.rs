@@ -7,7 +7,6 @@ mod running_header;
 mod tabbed_footnotes;
 
 use serde::Deserialize;
-use serde_yaml::{self};
 use slog::{debug, o};
 use std::path::Path;
 
